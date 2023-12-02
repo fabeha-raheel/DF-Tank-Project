@@ -4,7 +4,7 @@ import re
 
 from DF_Antenna_Data import *
 
-class Xilinx_Antenna():
+class Xilinx_Antenna:
     def __init__(self, port=None, baud=None) -> None:
         
         self.port = port
@@ -73,7 +73,7 @@ class Xilinx_Antenna():
                     
 if __name__ == "__main__":
 
-    FPGA_PORT = '/dev/ttyUSB1'      # port for Linux / Ubuntu
+    FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
     FPGA_BAUD = 115200
 
     print("Connecting to FPGA...")

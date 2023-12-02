@@ -7,6 +7,7 @@ class DF_Antenna_Data():
         self.amplitudes = []
         self.angle_pt = 0
         self.heading = 0
+        self.beam_width = 0
 
     @property
     def bandwidth(self):
