@@ -22,9 +22,9 @@ class Xilinx_Antenna:
             )
             time.sleep(1)
         except serial.SerialException:
-            print("Error connecting to port. Please try again.")
+            print("[XILINX] Error connecting to port. Please try again.")
         else:
-            print("Connection successfully established.")
+            print("[XILINX] Connection successfully established.")
             print()
 
     def read_data(self):
