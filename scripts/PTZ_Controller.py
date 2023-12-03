@@ -115,7 +115,7 @@ class PTZ_Controller():
 if __name__ == "__main__":
 
     PTZ_PORT = '/dev/ttyUSB0'      
-    PTZ_BAUD = 115200
+    PTZ_BAUD = 9600
 
     print("Connecting to Pantilt...")
     pantilt = PTZ_Controller(port=PTZ_PORT, baud=PTZ_BAUD)
