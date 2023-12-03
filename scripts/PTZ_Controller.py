@@ -62,7 +62,7 @@ class PTZ_Controller():
         try:
             if self.ptz.is_open:
                 self.ptz.write(cmd)
-                self.pan_angle = 0
+                self.til_angle = 0
                 if self.mode_fast == False:
                     time.sleep(3)
             else:
