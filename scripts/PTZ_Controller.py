@@ -33,25 +33,43 @@ class PTZ_Controller():
 
         print("[PTZ] to home position...")
         self.goto_zero_pan()
+        self.goto_zero_tilt()
         print("[PTZ] Ready")
     
     def goto_zero_pan(self):
-        cksm = (self.address + 0x00 + 0x07 + 0x00 + 0x22) % 256
+        cksm = (self.address + 0x00 + 0x4B + 0x00 + 0x00) % 256
         cksm = int(hex(cksm), 16)
 
-        cmd = struct.pack("BBBBBBB", 0xFF, self.address, 0x00, 0x07, 0x00, 0x22, cksm)
+        cmd = struct.pack("BBBBBBB", 0xFF, self.address, 0x00, 0x4B, 0x00, 0x00, cksm)
 
         try:
             if self.ptz.is_open:
                 self.ptz.write(cmd)
                 self.pan_angle = 0
                 if self.mode_fast == False:
-                    time.sleep(self.comm_delay)
+                    time.sleep(3)
             else:
                 print("[PTZ] Port not opened.")
         except:
             print("[PTZ] Writing previous command failed.")
     
+    def goto_zero_tilt(self):
+        cksm = (self.address + 0x00 + 0x4D + 0x00 + 0x00) % 256
+        cksm = int(hex(cksm), 16)
+
+        cmd = struct.pack("BBBBBBB", 0xFF, self.address, 0x00, 0x4D, 0x00, 0x00, cksm)
+
+        try:
+            if self.ptz.is_open:
+                self.ptz.write(cmd)
+                self.pan_angle = 0
+                if self.mode_fast == False:
+                    time.sleep(3)
+            else:
+                print("[PTZ] Port not opened.")
+        except:
+            print("[PTZ] Writing previous command failed.")
+
     def set_pan_position(self, degrees):
         angle = degrees*100
         hex_angle = '{:04x}'.format(angle)
@@ -78,7 +96,7 @@ class PTZ_Controller():
         hex_angle = '{:04x}'.format(angle)
         data1 = int(hex_angle[0] + hex_angle[1], 16)
         data2 = int(hex_angle[2] + hex_angle[3], 16)
-        cksm = (self.address + 0x00 + 0x4B + data1 + data2) % 256
+        cksm = (self.address + 0x00 + 0x4D + data1 + data2) % 256
         cksm = int(hex(cksm), 16)
 
         cmd = struct.pack("BBBBBBB", 0xFF, self.address, 0x00, 0x4D, data1, data2, cksm)
@@ -142,6 +160,11 @@ if __name__ == "__main__":
     # Go to Zero Pan Position
     pantilt.goto_zero_pan()
 
+    # Go to Zero Tilt Position
+    pantilt.goto_zero_tilt()
+
     # Return Current angles
     print("Current Pan Position: ", pantilt.current_pan_angle())
     print("Current Tilt Position: ", pantilt.current_tilt_angle())
+
+    
