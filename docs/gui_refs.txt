@@ -1,0 +1,4 @@
+https://doc.qt.io/qtforpython-6/PySide6/QtCharts/index.html#module-PySide6.QtCharts
+
+https://doc.qt.io/qtforpython-6/PySide6/QtCharts/QValueAxis.html
+

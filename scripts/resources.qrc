@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>resources/logo.png</file>
+    <file>resources/prince_sattam_logo.png</file>
+  </qresource>
+</RCC>
