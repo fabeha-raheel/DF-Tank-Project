@@ -24,11 +24,6 @@ class RadarPlot(QWidget):
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(2000)
 
-        self.timer2 = QTimer()
-        # self.timer.timeout.connect(self.update_plot)
-        self.timer2.timeout.connect(self.update_scanner)
-        self.timer2.start(100)
-
     def update_plot(self):
         self.scatterSeries.clear()  # Clear existing data
         for value in range(1, 50):
@@ -80,13 +75,4 @@ class RadarPlot(QWidget):
         self.chartView.setFocusPolicy(Qt.NoFocus)
         self.chartView.setRenderHint(QPainter.Antialiasing)
 
-        # vbox = QVBoxLayout()
         self.plotlayout.addWidget(self.chartView)
-        # self.setLayout(self.plotlayout)
-
-    def update_scanner(self):
-        # Update the colors of the scanner sectors
-        color = QColor(255, 0, 0)  # Initial color
-        for sector in self.scanner_sectors:
-            sector.updateColor(color)
-            color = color.lighter(10)  # Adjust the lightening factor as needed

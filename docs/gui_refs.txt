@@ -2,3 +2,7 @@ https://doc.qt.io/qtforpython-6/PySide6/QtCharts/index.html#module-PySide6.QtCha
 
 https://doc.qt.io/qtforpython-6/PySide6/QtCharts/QValueAxis.html
 
+https://www.pythonguis.com/pyqt5/
+
+
+
