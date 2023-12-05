@@ -85,11 +85,6 @@ class MainWindow(QMainWindow):
 
             print("Reading Antenna data....")
             data = self.fpga.get_static_data()
-            # print("Received {} amplitudes.".format(len(data.amplitudes)))
-            # print("f1: ", data.f1)
-            # print("f2: ", data.f2)
-            # print("Bandwidth: ", data.bandwidth)
-            # print("Sample Size: ", data.n_samples)
 
             if data != -1:
                 update_text = update_text + "DF Antenna Data successfully acquired!\n"
@@ -131,10 +126,7 @@ class MainWindow(QMainWindow):
     def initialize(self):
         self.gui_init_thread = threading.Thread(target=self.initialize_system, daemon=True)
         self.gui_init_thread.start()
-    
-
-
-
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
