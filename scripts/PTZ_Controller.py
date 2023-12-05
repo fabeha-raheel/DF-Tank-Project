@@ -59,7 +59,7 @@ class PTZ_Controller():
                 self.ptz.write(cmd)
                 self.pan_angle = 0
                 if self.mode_fast == False:
-                    time.sleep(3)
+                    time.sleep(self.comm_delay)
             else:
                 print("[PTZ] Port not opened.")
         except:
@@ -76,7 +76,7 @@ class PTZ_Controller():
                 self.ptz.write(cmd)
                 self.til_angle = 0
                 if self.mode_fast == False:
-                    time.sleep(3)
+                    time.sleep(self.comm_delay)
             else:
                 print("[PTZ] Port not opened.")
         except:
@@ -144,12 +144,12 @@ class PTZ_Controller():
 
 if __name__ == "__main__":
 
-    PTZ_PORT = '/dev/ttyUSB0'      
+    PTZ_PORT = '/dev/ttyUSB1'      
     PTZ_BAUD = 9600
 
     print("Connecting to Pantilt...")
-    pantilt = PTZ_Controller(port=PTZ_PORT, baud=PTZ_BAUD)
-    pantilt.connect()
+    pantilt = PTZ_Controller()
+    pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
 
     pantilt.mode_fast = False   # Wait 2s after sending each command to pantilt. If set to True, then functions will not block for 2s after sending commands.
 
