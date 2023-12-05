@@ -21,11 +21,20 @@ class Xilinx_Antenna:
                 timeout = None
             )
             time.sleep(1)
-        except serial.SerialException:
+        except serial.SerialException or serial.SerialTimeoutException:
             print("[XILINX] Error connecting to port. Please try again.")
+            pass
         else:
             print("[XILINX] Connection successfully established.")
             print()
+    
+    def disconnect(self):
+
+        if not self.xilinx.is_open:
+            print("[XILINX] Port is already closed!")
+        else:
+            self.xilinx.close()
+
 
     def read_data(self):
         datastream = ""
@@ -64,6 +73,10 @@ class Xilinx_Antenna:
                     self.data.n_samples = int(stopresult.groups()[0])
                 if "*" in line:
                     return self.data
+        
+        else:
+            print("[XILINX] Cannot retrieve data from unavailable port!")
+            return -1
     
     def return_data(self):
         return self.data.__dict__
