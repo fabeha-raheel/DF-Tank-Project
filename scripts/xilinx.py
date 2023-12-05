@@ -111,7 +111,7 @@ class Xilinx_Antenna:
                 if line.strip().isnumeric():
                     self.dynamic_data.amplitudes.append(int(line))
                 if "*" in line:
-                    return self.dynamic_data.__dict__
+                    return self.dynamic_data.amplitudes
         
         else:
             print("[XILINX] Cannot retrieve data from unavailable port!")
