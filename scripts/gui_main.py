@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.progressValue = 0
         self.timer.timeout.connect(self.splash_screen_timer)
-        self.timer.start(100)
+        self.timer.start(20)
 
         self.radarplot = RadarPlot(layout=self.plot_layout)
 
