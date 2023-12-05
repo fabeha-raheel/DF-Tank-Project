@@ -26,15 +26,22 @@ class PTZ_Controller():
             )
             time.sleep(1)
         except serial.SerialException:
-            print("[PTZ]    Error connecting to port. Please try again.")
+            print("[PTZ] Error connecting to port. Please try again.")
         else:
-            print("[PTZ]    Connection successfully established.")
+            print("[PTZ] Connection successfully established.")
             print()
 
         print("[PTZ] to home position...")
         self.goto_zero_pan()
         self.goto_zero_tilt()
         print("[PTZ] Ready")
+    
+    def disconnect(self):
+
+        if not self.ptz.is_open:
+            print("[PTZ] Port is already closed!")
+        else:
+            self.ptz.close()
     
     def goto_zero_pan(self):
         cksm = (self.address + 0x00 + 0x4B + 0x00 + 0x00) % 256
