@@ -35,15 +35,18 @@ class MainWindow(QMainWindow):
         uic.loadUi('main_window.ui', self)  # Load the UI file
         self.setWindowTitle("DF Tank - Graphical Interface")
 
+        self.df_static = DF_Data_Static()
+        self.df_dynamic = DF_Data_Dynamic()
+
         self.show_page('splash_screen')
         self.timer = QTimer()
         self.progressValue = 0
         self.timer.timeout.connect(self.splash_screen_timer)
         self.timer.start(100)
 
-        self.radarplot = RadarPlot(layout=self.plot_layout)
+        
 
-        self.initialization_complete.connect(lambda: self.show_page('visualization_page'))
+        self.initialization_complete.connect(self.new_screen)
 
         self.initialize()
 
@@ -57,6 +60,11 @@ class MainWindow(QMainWindow):
         if self.progressValue >= 100:
             self.timer.stop()
             # self.show_page('visualization_page')
+    
+    def new_screen(self):
+        self.radarplot = RadarPlot(layout=self.plot_layout, frequencies=self.frequencies, y = self.df_dynamic.amplitudes)
+        self.radarplot.create_plot()
+        self.show_page('visualization_page')
     
     def initialize_system(self):
 
@@ -76,18 +84,23 @@ class MainWindow(QMainWindow):
             self.progress_update_label.setText(update_text)
 
             print("Reading Antenna data....")
-            data = self.fpga.read_data()
+            data = self.fpga.get_static_data()
             # print("Received {} amplitudes.".format(len(data.amplitudes)))
             # print("f1: ", data.f1)
             # print("f2: ", data.f2)
             # print("Bandwidth: ", data.bandwidth)
             # print("Sample Size: ", data.n_samples)
 
-            print(self.fpga.return_data())
-
             if data != -1:
                 update_text = update_text + "DF Antenna Data successfully acquired!\n"
                 self.progress_update_label.setText(update_text)
+                self.df_static.f1 = data["_f1"]
+                self.df_static.f2 = data["_f2"]
+                self.df_static.n_samples = data["_n_samples"]
+                self.df_dynamic.amplitudes = self.fpga.dynamic_data.amplitudes
+                self.frequencies = list(np.arange(start=self.df_static.f1, stop=self.df_static.f2, step=((self.df_static.f2-self.df_static.f1)/self.df_static.n_samples)))
+
+                print(self.df_static.__dict__)
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
                 self.progress_update_label.setText(update_text)
@@ -112,17 +125,20 @@ class MainWindow(QMainWindow):
         update_text = update_text + "System Initialization Complete!\n"
         self.progress_update_label.setText(update_text)
         print("System Initialization complete!")
+
         self.initialization_complete.emit()
 
     def initialize(self):
         self.gui_init_thread = threading.Thread(target=self.initialize_system, daemon=True)
         self.gui_init_thread.start()
+    
+
 
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.showMaximized()
-    # main_window.show()
+    # main_window.showMaximized()
+    main_window.show()
     sys.exit(app.exec_())

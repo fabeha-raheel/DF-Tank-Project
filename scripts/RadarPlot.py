@@ -13,12 +13,12 @@ from PyQt5.QtChart import QScatterSeries, QPolarChart, QChart, QChartView, QValu
 
 class RadarPlot(QWidget):
 
-    def __init__(self, layout=None) -> None:
+    def __init__(self, layout=None, frequencies=[], y=[]) -> None:
         super(RadarPlot, self).__init__()
 
         self.plotlayout = layout
-
-        self.create_plot()
+        self.frequencies = frequencies
+        self.ys = y
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_plot)
@@ -26,8 +26,8 @@ class RadarPlot(QWidget):
 
     def update_plot(self):
         self.scatterSeries.clear()  # Clear existing data
-        for value in range(1, 50):
-            self.scatterSeries.append(value, random.random() * 10)
+        for i in range(0, len(self.ys)):
+            self.scatterSeries.append(self.frequencies[i], self.ys[i])
         # No need to add a new series or set the chart again, just update the data
 
     def create_plot(self):
@@ -63,13 +63,13 @@ class RadarPlot(QWidget):
         # angularAxis.setMinorTickCount(5)
         # angularAxis.setTickCount(20)
         self.polarChart.addAxis(angularAxis, QPolarChart.PolarOrientation.PolarOrientationAngular)
-        angularAxis.setRange(0,20)
+        angularAxis.setRange(self.frequencies[0],self.frequencies[-1])
 
         radialAxis = QValueAxis()
         radialAxis.setTickCount(5)
         radialAxis.setLabelFormat("%d")
         self.polarChart.addAxis(radialAxis, QPolarChart.PolarOrientation.PolarOrientationRadial)
-        radialAxis.setRange(0, 10)
+        radialAxis.setRange(min(self.ys), max(self.ys))
 
         self.chartView.setChart(self.polarChart)
         self.chartView.setFocusPolicy(Qt.NoFocus)
