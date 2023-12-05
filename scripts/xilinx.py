@@ -7,7 +7,9 @@ from DF_Antenna_Data import *
 class Xilinx_Antenna:
     def __init__(self) -> None:
 
-        self.data = DF_Antenna_Data()
+        self.static_data = Antenna_Static()
+
+        self.dynamic_data = Antenna_Dyanmaic()
 
     def connect(self, **kwargs):
 
@@ -40,12 +42,11 @@ class Xilinx_Antenna:
         else:
             self.xilinx.close()
 
-
-    def read_data(self):
+    def get_static_data(self):
         datastream = ""
         startSequence = r"11111111 >> ([0-9]*)"
         stopSequence = r"([0-9]*) >> ([0-9]*)"
-        self.data.amplitudes = []
+        self.dynamic_data.amplitudes = []
 
         if self.xilinx.is_open:
             
@@ -70,21 +71,57 @@ class Xilinx_Antenna:
                 stopresult = re.search(stopSequence, line)
 
                 if line.strip().isnumeric():
-                    self.data.amplitudes.append(int(line))
+                    self.dynamic_data.amplitudes.append(int(line))
                 elif startresult is not None:
-                    self.data.f1 = int(startresult.groups()[0])
+                    self.static_data.f1 = int(startresult.groups()[0])
                 elif stopresult is not None:
-                    self.data.f2 = int(stopresult.groups()[1])
-                    self.data.n_samples = int(stopresult.groups()[0])
+                    self.static_data.f2 = int(stopresult.groups()[1])
+                    self.static_data.n_samples = int(stopresult.groups()[0])
                 if "*" in line:
-                    return self.data
+                    return self.static_data.__dict__
+        
+        else:
+            print("[XILINX] Cannot retrieve data from unavailable port!")
+            return -1
+
+
+    def read_data(self):
+        datastream = ""
+        self.dynamic_data.amplitudes = []
+
+        if self.xilinx.is_open:
+            
+            command = '\n'
+            command = command.encode()
+            self.xilinx.write(command)
+
+            while True:
+                bytes = self.xilinx.read(self.xilinx.in_waiting)
+                decoded_bytes = bytes.decode('utf-8')
+                if decoded_bytes != '':
+                    datastream = datastream + decoded_bytes
+                    if "*" in datastream:
+                        break
+                    else:
+                        continue
+                
+            datastream = datastream.split("\r\n")
+
+            for line in datastream:
+                if line.strip().isnumeric():
+                    self.dynamic_data.amplitudes.append(int(line))
+                if "*" in line:
+                    return self.dynamic_data.__dict__
         
         else:
             print("[XILINX] Cannot retrieve data from unavailable port!")
             return -1
     
     def return_data(self):
-        return self.data.__dict__
+        return self.dynamic_data.__dict__
+    
+    def return_static_data(self):
+        return self.static_data.__dict__
     
     def is_connected(self):
         return self.xilinx.is_open
@@ -100,11 +137,13 @@ if __name__ == "__main__":
 
     if fpga.is_connected() == True:
         print("Reading Antenna data....")
-        data = fpga.read_data()
+        # data = fpga.read_data()
+        data = fpga.get_static_data()
         # print("Received {} amplitudes.".format(len(data.amplitudes)))
         # print("f1: ", data.f1)
         # print("f2: ", data.f2)
         # print("Bandwidth: ", data.bandwidth)
         # print("Sample Size: ", data.n_samples)
+        print(data)
 
-        print(fpga.return_data())
+        # print(fpga.return_data())
