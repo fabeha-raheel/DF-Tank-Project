@@ -5,14 +5,19 @@ import re
 from DF_Antenna_Data import *
 
 class Xilinx_Antenna:
-    def __init__(self, port=None, baud=None) -> None:
-        
-        self.port = port
-        self.baud = baud
+    def __init__(self) -> None:
 
         self.data = DF_Antenna_Data()
 
-    def connect(self):
+    def connect(self, **kwargs):
+
+        if kwargs.get("port") == None:
+            print("[XILINX] Connection Failed! Serial Port not specified.")
+        else:
+            self.port = kwargs.get("port")
+
+        self.baud = kwargs.get("baud", 115200)
+
         try:
             self.xilinx = serial.Serial(
                 port=self.port,
@@ -90,8 +95,8 @@ if __name__ == "__main__":
     FPGA_BAUD = 115200
 
     print("Connecting to FPGA...")
-    fpga = Xilinx_Antenna(port=FPGA_PORT, baud=FPGA_BAUD)
-    fpga.connect()
+    fpga = Xilinx_Antenna()
+    fpga.connect(port=FPGA_PORT, baud=FPGA_BAUD)
 
     if fpga.is_connected() == True:
         print("Reading Antenna data....")
