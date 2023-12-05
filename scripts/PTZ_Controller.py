@@ -4,10 +4,7 @@ import struct
 
 class PTZ_Controller():
 
-    def __init__(self, port=None, baud=None) -> None:
-        
-        self.port = port
-        self.baud = baud
+    def __init__(self) -> None:
         
         self.pan_angle = None
         self.tilt_angle = None
@@ -16,7 +13,15 @@ class PTZ_Controller():
         self.comm_delay = 2
         self.mode_fast = False
 
-    def connect(self):
+    def connect(self, **kwargs):
+
+        if kwargs.get("port") == None:
+            print("[PTZ] Connection Failed! Serial Port not specified.")
+        else:
+            self.port = kwargs.get("port")
+
+        self.baud = kwargs.get("baud", 115200)
+
         try:
             self.ptz = serial.Serial(
                 port=self.port,
