@@ -33,13 +33,18 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        uic.loadUi('main_window.ui', self)  # Load the UI file
+        uic.loadUi('main_test.ui', self)  # Load the UI file
         self.setWindowTitle("DF Tank - Graphical Interface")
 
         self.df_static = DF_Data_Static()
         self.df_dynamic = DF_Data_Dynamic()
 
-        self.radarplot = RadarPlot(layout=self.plot_layout)
+        self.r = np.arange(0, 2, 0.01)
+        self.theta = 2 * np.pi * self.r
+
+        # self.radarplot = RadarPlot(layout=self.plot_layout)
+
+        self.radar_plot.canvas.ax.plot(self.theta, self.r)
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -79,9 +84,9 @@ class MainWindow(QMainWindow):
 
 
         # start the continuous data acquisition thread
-        print("Starting Data Acquisition Thread...")
-        self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
-        self.daq_thread.start()
+        # print("Starting Data Acquisition Thread...")
+        # self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
+        # self.daq_thread.start()
 
     
     def initialize_system(self):
