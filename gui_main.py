@@ -39,12 +39,7 @@ class MainWindow(QMainWindow):
         self.df_static = DF_Data_Static()
         self.df_dynamic = DF_Data_Dynamic()
 
-        self.r = np.arange(0, 2, 0.01)
-        self.theta = 2 * np.pi * self.r
-
         # self.radarplot = RadarPlot(layout=self.plot_layout)
-
-        self.radar_plot.canvas.ax.plot(self.theta, self.r)
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -71,7 +66,7 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(1)
+        self.TabWidget.setCurrentIndex(0)
 
         # start visualization timer
         self.live_spectrum_update = QTimer()
@@ -82,11 +77,15 @@ class MainWindow(QMainWindow):
         self.spectrum_history_update.timeout.connect(self.update_scan_history)
         self.spectrum_history_update.start(100)
 
+        self.radar_plot_update = QTimer()
+        self.radar_plot_update.timeout.connect(self.update_radar_plot)
+        self.radar_plot_update.start(100)
+
 
         # start the continuous data acquisition thread
-        # print("Starting Data Acquisition Thread...")
-        # self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
-        # self.daq_thread.start()
+        print("Starting Data Acquisition Thread...")
+        self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
+        self.daq_thread.start()
 
     
     def initialize_system(self):
@@ -118,9 +117,9 @@ class MainWindow(QMainWindow):
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
                 self.progress_update_label.setText(update_text)
-        else:
-            update_text = update_text + "Error connecting to FPGA!\n"
-            self.progress_update_label.setText(update_text)
+        # else:
+        #     update_text = update_text + "Error connecting to FPGA!\n"
+        #     self.progress_update_label.setText(update_text)
 
         print("System Initialization complete!")
 
@@ -217,6 +216,11 @@ class MainWindow(QMainWindow):
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
+    def update_radar_plot(self):
+        self.radar_plot.canvas.ax.cla()
+        self.radar_plot.plotScatterPoints(self.frequencies, self.df_dynamic.normalized_amplitudes, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
+        self.radar_plot.canvas.draw()
+    
     def redraw_spectrum(self):
         self.plot_0.canvas.ax.cla()
         self.plot_0.setTitle("{}° Relative".format(self.df_dynamic.angle_pt), fontsize=10)

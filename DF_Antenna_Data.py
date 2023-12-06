@@ -29,6 +29,10 @@ class DF_Data_Dynamic():
     def heading(self, value):
         self._heading = value
 
+    @property
+    def normalized_amplitudes(self):
+        return [(1-(float(i)-min(self._amplitudes))/(max(self._amplitudes)-min(self._amplitudes))) for i in self._amplitudes]
+
 class DF_Data_Static():
     def __init__(self) -> None:
         self.f1 = 0
