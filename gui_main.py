@@ -89,24 +89,20 @@ class MainWindow(QMainWindow):
         update_text = ""
 
         print("Connecting to FPGA...")
-        # update_text = update_text + "Connecting to FPGA...\n"
-        # self.progress_update_label.setText(update_text)
         self.fpga = Xilinx_Antenna()
         self.fpga.connect(port=FPGA_PORT, baud=FPGA_BAUD)
 
-        if self.fpga.is_connected():
-            # update_text = update_text + "FPGA successfully connected!\n"
-            # self.progress_update_label.setText(update_text)
+        print("Connecting to Pan Tilt Mechanism...")
+        self.pantilt = PTZ_Controller()
+        self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
+        self.pantilt.mode_fast = True
 
-            # update_text = update_text + "Acquiring Data...\n"
-            # self.progress_update_label.setText(update_text)
+        if self.fpga.is_connected():
 
             print("Reading Antenna data....")
             data = self.fpga.get_static_data()
 
             if data != -1:
-                # update_text = update_text + "DF Antenna Data successfully acquired!\n"
-                # self.progress_update_label.setText(update_text)
                 self.df_static.f1 = data["_f1"]
                 self.df_static.f2 = data["_f2"]
                 self.df_static.n_samples = data["_n_samples"]
@@ -120,23 +116,7 @@ class MainWindow(QMainWindow):
         else:
             update_text = update_text + "Error connecting to FPGA!\n"
             self.progress_update_label.setText(update_text)
-        
-        print("Connecting to Pan Tilt Mechanism...")
-        # update_text = update_text + "Connecting to Pan Tilt Mechanism...\n"
-        # self.progress_update_label.setText(update_text)
-        self.pantilt = PTZ_Controller()
-        self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
-        self.pantilt.mode_fast = True
 
-        # if self.pantilt.is_connected():
-            # update_text = update_text + "Pantilt successfully connected!\n"
-            # self.progress_update_label.setText(update_text)
-
-            # update_text = update_text + "Setting Pantilt to Home Position...\n"
-            # self.progress_update_label.setText(update_text)
-        
-        # update_text = update_text + "System Initialization Complete!\n"
-        # self.progress_update_label.setText(update_text)
         print("System Initialization complete!")
 
         self.initialization_complete.emit()
@@ -151,97 +131,81 @@ class MainWindow(QMainWindow):
 
                 self.pantilt.set_pan_position(90)
                 self.df_dynamic.angle_pt = 90
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 90
 
                 self.pantilt.set_pan_position(67.5)
                 self.df_dynamic.angle_pt = 67.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 67.5
 
                 self.pantilt.set_pan_position(45)
                 self.df_dynamic.angle_pt = 45
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 45
 
                 self.pantilt.set_pan_position(22.5)
                 self.df_dynamic.angle_pt = 22.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 22.5
 
                 self.pantilt.set_pan_position(0)
                 self.df_dynamic.angle_pt = 0
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 0
 
                 self.pantilt.set_pan_position(337.5)
                 self.df_dynamic.angle_pt = -22.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -22.5
 
                 self.pantilt.set_pan_position(315)
                 self.df_dynamic.angle_pt = -45
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -45
 
                 self.pantilt.set_pan_position(292.5)
                 self.df_dynamic.angle_pt = -67.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -67.5
 
                 self.pantilt.set_pan_position(270)
                 self.df_dynamic.angle_pt = -90
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -90
 
                 self.pantilt.set_pan_position(292.5)
                 self.df_dynamic.angle_pt = -67.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -67.5
 
                 self.pantilt.set_pan_position(315)
                 self.df_dynamic.angle_pt = -45
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -45
 
                 self.pantilt.set_pan_position(337.5)
                 self.df_dynamic.angle_pt = -22.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = -22.5
 
                 self.pantilt.set_pan_position(0)
                 self.df_dynamic.angle_pt = 0
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 0
 
                 self.pantilt.set_pan_position(22.5)
                 self.df_dynamic.angle_pt = 22.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 22.5
 
                 self.pantilt.set_pan_position(45)
                 self.df_dynamic.angle_pt = 45
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 45
 
                 self.pantilt.set_pan_position(67.5)
                 self.df_dynamic.angle_pt = 67.5
-                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
                 self.df_dynamic.angle_pt = 67.5
 
