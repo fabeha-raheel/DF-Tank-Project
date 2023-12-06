@@ -58,8 +58,9 @@ class PTZ_Controller():
             if self.ptz.is_open:
                 self.ptz.write(cmd)
                 self.pan_angle = 0
-                if self.mode_fast == False:
-                    time.sleep(self.comm_delay)
+                time.sleep(3)
+                # if self.mode_fast == False:
+                #     time.sleep(self.comm_delay)
             else:
                 print("[PTZ] Port not opened.")
         except:
@@ -83,7 +84,7 @@ class PTZ_Controller():
             print("[PTZ] Writing previous command failed.")
 
     def set_pan_position(self, degrees):
-        angle = degrees*100
+        angle = int(degrees*100)
         hex_angle = '{:04x}'.format(angle)
         data1 = int(hex_angle[0] + hex_angle[1], 16)
         data2 = int(hex_angle[2] + hex_angle[3], 16)
@@ -154,29 +155,29 @@ if __name__ == "__main__":
     pantilt.mode_fast = False   # Wait 2s after sending each command to pantilt. If set to True, then functions will not block for 2s after sending commands.
 
     # Set Pan Angle
-    desired_pan_angle = 15      # in degrees
+    desired_pan_angle = 67.5      # in degrees
     pantilt.set_pan_position(desired_pan_angle)
 
     # Return Current angles
-    print("Current Pan Position: ", pantilt.current_pan_angle())
-    print("Current Tilt Position: ", pantilt.current_tilt_angle())
+    # print("Current Pan Position: ", pantilt.current_pan_angle())
+    # print("Current Tilt Position: ", pantilt.current_tilt_angle())
 
-    # Set Tilt Angle
-    desired_tilt_angle = 45     # in degrees
-    pantilt.set_tilt_position(desired_tilt_angle)
+    # # Set Tilt Angle
+    # desired_tilt_angle = 45     # in degrees
+    # pantilt.set_tilt_position(desired_tilt_angle)
 
-    # Return Current angles
-    print("Current Pan Position: ", pantilt.current_pan_angle())
-    print("Current Tilt Position: ", pantilt.current_tilt_angle())
+    # # Return Current angles
+    # print("Current Pan Position: ", pantilt.current_pan_angle())
+    # print("Current Tilt Position: ", pantilt.current_tilt_angle())
 
-    # Go to Zero Pan Position
-    pantilt.goto_zero_pan()
+    # # Go to Zero Pan Position
+    # pantilt.goto_zero_pan()
 
-    # Go to Zero Tilt Position
-    pantilt.goto_zero_tilt()
+    # # Go to Zero Tilt Position
+    # pantilt.goto_zero_tilt()
 
-    # Return Current angles
-    print("Current Pan Position: ", pantilt.current_pan_angle())
-    print("Current Tilt Position: ", pantilt.current_tilt_angle())
+    # # Return Current angles
+    # print("Current Pan Position: ", pantilt.current_pan_angle())
+    # print("Current Tilt Position: ", pantilt.current_tilt_angle())
 
     
