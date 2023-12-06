@@ -14,22 +14,25 @@ class MplWidget(QWidget):
         QWidget.__init__(self, parent)
         
         self.canvas = MplCanvas()
-        self.mpl_toolbar = NavigationToolbar(self.canvas, self)
+        # self.mpl_toolbar = NavigationToolbar(self.canvas, self)
         
         vertical_layout = QVBoxLayout()
         # vertical_layout.addWidget(self.mpl_toolbar)
         vertical_layout.addWidget(self.canvas)
         self.setLayout(vertical_layout)
         
-    def setTitle(self, title):
-        self.canvas.ax.set_title(title, fontsize=10)
+    def setTitle(self, title, fontsize):
+        self.canvas.ax.set_title(title, fontsize=fontsize)
         
-    def setLabels(self, xlabel, ylabel):
-        self.canvas.ax.set_ylabel(ylabel, fontsize=5)
-        self.canvas.ax.set_xlabel(xlabel, fontsize=5)
+    def setLabels(self, xlabel, ylabel, fontsize):
+        self.canvas.ax.set_ylabel(ylabel, fontsize=fontsize)
+        self.canvas.ax.set_xlabel(xlabel, fontsize=fontsize)
 
     def setLimits(self, min, max):
         self.canvas.ax.set_ylim(min, max)
+
+    def setBackgroundColor(self, color):
+        self.canvas.ax.set_facecolor(color)
         
         
 class MplCanvas(FigureCanvas):
@@ -43,11 +46,4 @@ class MplCanvas(FigureCanvas):
         #                        QtGui.QSizePolicy.Expanding,
         #                        QtGui.QSizePolicy.Expanding)
         self.ax.tick_params(axis='both', which='major', labelsize=6)
-        self.ax.tick_params(axis='both', which='minor', labelsize=6)
-        
-        
-        
-        
-            
-        
-
+        self.ax.tick_params(axis='both', which='minor', labelsize=6)  

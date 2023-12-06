@@ -218,7 +218,7 @@ color: #EEEEEE;
 }</string>
           </property>
           <property name="text">
-           <string>Direction Finding UGV</string>
+           <string>Direction Finding Tank</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -228,11 +228,11 @@ color: #EEEEEE;
         <item>
          <widget class="QTabWidget" name="TabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="Scanner">
            <attribute name="title">
-            <string>Scanning</string>
+            <string>Live Scan</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_6">
             <item row="0" column="0">
@@ -423,7 +423,7 @@ color: #EEEEEE;
                  </item>
                  <item>
                   <layout class="QGridLayout" name="gridLayout_5">
-                   <item row="1" column="0">
+                   <item row="1" column="0" alignment="Qt::AlignRight">
                     <widget class="QPushButton" name="left_button">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -499,7 +499,7 @@ color: #EEEEEE;
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="2">
+                   <item row="1" column="2" alignment="Qt::AlignLeft">
                     <widget class="QPushButton" name="right_button">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -553,95 +553,53 @@ color: #EEEEEE;
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="Spectrum">
+          <widget class="QWidget" name="LiveSpectrum">
            <attribute name="title">
-            <string>Spectrum</string>
+            <string>Live Spectrum</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_9">
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_8">
+              <item row="0" column="0" rowspan="2" colspan="2">
+               <widget class="MplWidget" name="plot_0" native="true"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>Scan History</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_11">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout_10">
+              <item row="2" column="0">
+               <widget class="MplWidget" name="plot_31" native="true"/>
+              </item>
+              <item row="2" column="1">
+               <widget class="MplWidget" name="plot_32" native="true"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="MplWidget" name="plot_11" native="true"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="MplWidget" name="plot_21" native="true"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="MplWidget" name="plot_12" native="true"/>
+              </item>
+              <item row="1" column="1">
+               <widget class="MplWidget" name="plot_22" native="true"/>
+              </item>
               <item row="0" column="2">
-               <widget class="MplWidget" name="plot_11" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
+               <widget class="MplWidget" name="plot_13" native="true"/>
               </item>
               <item row="1" column="2">
-               <widget class="MplWidget" name="plot_21" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="MplWidget" name="plot_41" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
+               <widget class="MplWidget" name="plot_23" native="true"/>
               </item>
               <item row="2" column="2">
-               <widget class="MplWidget" name="plot_31" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="MplWidget" name="plot_22" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="MplWidget" name="plot_12" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="3">
-               <widget class="MplWidget" name="plot_32" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="3">
-               <widget class="MplWidget" name="plot_42" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" rowspan="4" colspan="2">
-               <widget class="MplWidget" name="plot_0" native="true"/>
+               <widget class="MplWidget" name="plot_33" native="true"/>
               </item>
              </layout>
             </item>

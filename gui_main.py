@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.splash_screen_timer)
         self.timer.start(100)
 
-        self.initialization_complete.connect(lambda: self.show_page('visualization_page'))
+        self.initialization_complete.connect(self.goto_visualization)
 
         self.initialize()
 
@@ -60,31 +60,46 @@ class MainWindow(QMainWindow):
         self.progressBar.setValue(self.progressValue)
         if self.progressValue >= 100:
             self.timer.stop()
-            # self.show_page('visualization_page')
+
+    def goto_visualization(self):
+
+        # show the visualization page
+        self.show_page('visualization_page')
+
+        # start visualization timer
+        self.visual_timer = QTimer()
+        self.visual_timer.timeout.connect(self.redraw_spectrum)
+        self.visual_timer.start(100)
+
+        # start the continuous data acquisition thread
+        print("Starting Data Acquisition Thread...")
+        self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
+        self.daq_thread.start()
+
     
     def initialize_system(self):
 
         update_text = ""
 
         print("Connecting to FPGA...")
-        update_text = update_text + "Connecting to FPGA...\n"
-        self.progress_update_label.setText(update_text)
+        # update_text = update_text + "Connecting to FPGA...\n"
+        # self.progress_update_label.setText(update_text)
         self.fpga = Xilinx_Antenna()
         self.fpga.connect(port=FPGA_PORT, baud=FPGA_BAUD)
 
         if self.fpga.is_connected():
-            update_text = update_text + "FPGA successfully connected!\n"
-            self.progress_update_label.setText(update_text)
+            # update_text = update_text + "FPGA successfully connected!\n"
+            # self.progress_update_label.setText(update_text)
 
-            update_text = update_text + "Acquiring Data...\n"
-            self.progress_update_label.setText(update_text)
+            # update_text = update_text + "Acquiring Data...\n"
+            # self.progress_update_label.setText(update_text)
 
             print("Reading Antenna data....")
             data = self.fpga.get_static_data()
 
             if data != -1:
-                update_text = update_text + "DF Antenna Data successfully acquired!\n"
-                self.progress_update_label.setText(update_text)
+                # update_text = update_text + "DF Antenna Data successfully acquired!\n"
+                # self.progress_update_label.setText(update_text)
                 self.df_static.f1 = data["_f1"]
                 self.df_static.f2 = data["_f2"]
                 self.df_static.n_samples = data["_n_samples"]
@@ -99,22 +114,22 @@ class MainWindow(QMainWindow):
             update_text = update_text + "Error connecting to FPGA!\n"
             self.progress_update_label.setText(update_text)
         
-        print("Connecting to Pan Tilt Mechanism...")
-        update_text = update_text + "Connecting to Pan Tilt Mechanism...\n"
-        self.progress_update_label.setText(update_text)
-        self.pantilt = PTZ_Controller()
-        self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
-        self.pantilt.mode_fast = False
+        # print("Connecting to Pan Tilt Mechanism...")
+        # update_text = update_text + "Connecting to Pan Tilt Mechanism...\n"
+        # self.progress_update_label.setText(update_text)
+        # self.pantilt = PTZ_Controller()
+        # self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
+        # self.pantilt.mode_fast = False
 
-        if self.pantilt.is_connected():
-            update_text = update_text + "Pantilt successfully connected!\n"
-            self.progress_update_label.setText(update_text)
+        # if self.pantilt.is_connected():
+        #     update_text = update_text + "Pantilt successfully connected!\n"
+        #     self.progress_update_label.setText(update_text)
 
-            update_text = update_text + "Setting Pantilt to Home Position...\n"
-            self.progress_update_label.setText(update_text)
+        #     update_text = update_text + "Setting Pantilt to Home Position...\n"
+        #     self.progress_update_label.setText(update_text)
         
-        update_text = update_text + "System Initialization Complete!\n"
-        self.progress_update_label.setText(update_text)
+        # update_text = update_text + "System Initialization Complete!\n"
+        # self.progress_update_label.setText(update_text)
         print("System Initialization complete!")
 
         self.initialization_complete.emit()
@@ -123,27 +138,26 @@ class MainWindow(QMainWindow):
         self.gui_init_thread = threading.Thread(target=self.initialize_system, daemon=True)
         self.gui_init_thread.start()
 
-    # def request_data_continuously(self):
-    #     while True:
-    #         if self.fpga.is_connected():
+    def request_data_continuously(self):
+        while True:
+            if self.fpga.is_connected():
 
-    #             print("Reading Antenna data....")
-    #             self.df_dynamic.amplitudes = self.fpga.read_data()
+                print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
 
-    # def get_data(self):
-    #     self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
+    def get_data(self):
+        self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
-    # def update_graphs(self):
-    #     self.get_data()
-    #     self.redraw_spectrum()
 
-    # def redraw_spectrum(self):
-    #     self.plot_0.canvas.ax.clear()
-    #     self.plot_0.setTitle("0 Degrees")
-    #     # self.plot_0.setLimits()
-    #     # self.plot_0.canvas.set_xlabel('')
-    #     self.plot_0.canvas.ax.plot(self.frequencies, self.df_dynamic.amplitudes, 'y')
-    #     self.plot_0.canvas.draw()
+    def redraw_spectrum(self):
+        self.plot_0.canvas.ax.cla()
+        self.plot_0.setTitle("0 Degrees", fontsize=10)
+        self.plot_0.setBackgroundColor('k')
+        self.plot_0.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
+        # self.plot_0.setLimits()
+        # self.plot_0.canvas.set_xlabel('')
+        self.plot_0.canvas.ax.plot(self.frequencies, self.df_dynamic.amplitudes, 'y')
+        self.plot_0.canvas.draw()
 
 
 if __name__ == '__main__':
