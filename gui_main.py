@@ -39,15 +39,15 @@ class MainWindow(QMainWindow):
         self.df_static = DF_Data_Static()
         self.df_dynamic = DF_Data_Dynamic()
 
+        self.radarplot = RadarPlot(layout=self.plot_layout)
+
         self.show_page('splash_screen')
         self.timer = QTimer()
         self.progressValue = 0
         self.timer.timeout.connect(self.splash_screen_timer)
         self.timer.start(100)
 
-        
-
-        self.initialization_complete.connect(self.new_screen)
+        self.initialization_complete.connect(lambda: self.show_page('visualization_page'))
 
         self.initialize()
 
@@ -61,11 +61,6 @@ class MainWindow(QMainWindow):
         if self.progressValue >= 100:
             self.timer.stop()
             # self.show_page('visualization_page')
-    
-    def new_screen(self):
-        self.radarplot = RadarPlot(layout=self.plot_layout, frequencies=self.frequencies, y = self.df_dynamic.amplitudes)
-        self.radarplot.create_plot()
-        self.show_page('visualization_page')
     
     def initialize_system(self):
 
@@ -128,27 +123,27 @@ class MainWindow(QMainWindow):
         self.gui_init_thread = threading.Thread(target=self.initialize_system, daemon=True)
         self.gui_init_thread.start()
 
-    def request_data_continuously(self):
-        while True:
-            if self.fpga.is_connected():
+    # def request_data_continuously(self):
+    #     while True:
+    #         if self.fpga.is_connected():
 
-                print("Reading Antenna data....")
-                self.df_dynamic.amplitudes = self.fpga.read_data()
+    #             print("Reading Antenna data....")
+    #             self.df_dynamic.amplitudes = self.fpga.read_data()
 
-    def get_data(self):
-        self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
+    # def get_data(self):
+    #     self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
-    def update_graphs(self):
-        self.get_data()
-        self.redraw_spectrum()
+    # def update_graphs(self):
+    #     self.get_data()
+    #     self.redraw_spectrum()
 
-    def redraw_spectrum(self):
-        self.plot_0.canvas.ax.clear()
-        self.plot_0.setTitle("0 Degrees")
-        # self.plot_0.setLimits()
-        # self.plot_0.canvas.set_xlabel('')
-        self.plot_0.canvas.ax.plot(self.frequencies, self.df_dynamic.amplitudes, 'y')
-        self.plot_0.canvas.draw()
+    # def redraw_spectrum(self):
+    #     self.plot_0.canvas.ax.clear()
+    #     self.plot_0.setTitle("0 Degrees")
+    #     # self.plot_0.setLimits()
+    #     # self.plot_0.canvas.set_xlabel('')
+    #     self.plot_0.canvas.ax.plot(self.frequencies, self.df_dynamic.amplitudes, 'y')
+    #     self.plot_0.canvas.draw()
 
 
 if __name__ == '__main__':
