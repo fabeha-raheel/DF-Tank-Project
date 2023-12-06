@@ -77,6 +77,8 @@ class MainWindow(QMainWindow):
         self.spectrum_history_update.timeout.connect(self.update_scan_history)
         self.spectrum_history_update.start(100)
 
+        # self.radar_plot.setTicks(self.frequencies)
+
         self.radar_plot_update = QTimer()
         self.radar_plot_update.timeout.connect(self.update_radar_plot)
         self.radar_plot_update.start(100)

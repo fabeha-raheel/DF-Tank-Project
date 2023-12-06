@@ -34,22 +34,13 @@ class MplRadar(QWidget):
         vertical_layout.addWidget(self.canvas)
         self.setLayout(vertical_layout)
         
+    def setTicks(self, array):
+        theta = np.linspace(0, 2 * np.pi, len(array), endpoint=False)
+        self.canvas.ax.set_xticks(theta)
+        self.canvas.ax.set_xticklabels([f"{val:.2f} Hz" for val in theta]) 
+    
     def setTitle(self, title, fontsize):
         self.canvas.ax.set_title(title, fontsize=fontsize)
-        
-    def setLabels(self, xlabel, ylabel, fontsize):
-        self.canvas.ax.set_ylabel(ylabel, fontsize=fontsize)
-        self.canvas.ax.set_xlabel(xlabel, fontsize=fontsize)
-
-    def setLimits(self, min, max):
-        self.canvas.ax.set_ylim(min, max)
-
-    def setBackgroundColor(self, color):
-        self.canvas.ax.set_facecolor(color)
-
-    def hex_background(self, hex_color):
-        rgba_color = mcolors.to_rgba(hex_color)  # Convert hex to RGBA
-        self.canvas.fig.patch.set_facecolor(rgba_color)  # Set the face color of the entire figure
 
     def setAxisColor(self, color):
         self.canvas.set_axis_color(color)
@@ -69,11 +60,13 @@ class MplRadarCanvas(FigureCanvas):
         #                        QtGui.QSizePolicy.Expanding,
         #                        QtGui.QSizePolicy.Expanding)
         # self.ax.tick_params(axis='both', which='major', labelsize=6)
-        # self.ax.tick_params(axis='both', which='minor', labelsize=6)  
+        # self.ax.tick_params(axis='both', which='minor', labelsize=6) 
 
-        # self.ax.set_rmax(2)
-        # self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
-        # self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+        
+
+        self.ax.set_rmax(2)
+        self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
+        self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
         self.ax.grid(True)
 
     def set_axis_color(self, color):
@@ -83,8 +76,6 @@ class MplRadarCanvas(FigureCanvas):
         self.ax.tick_params(axis='y', colors=color)
 
     def plot_scatter_points(self, theta, r, color, marker, label, edgecolors=None):
-        # theta = np.linspace(0, 2 * np.pi, len(theta), endpoint=False)
-        # self.ax.set_xticks(theta)
-        # self.ax.set_xticklabels([f"{val:.2f} Hz" for val in theta])
+        
         self.ax.scatter(theta, r, s=30, c=color, marker=marker, label=label, edgecolors=edgecolors)
         
