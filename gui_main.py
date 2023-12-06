@@ -65,6 +65,8 @@ class MainWindow(QMainWindow):
 
         # show the visualization page
         self.show_page('visualization_page')
+        # show the live spectrum by default
+        self.TabWidget.setCurrentIndex(1)
 
         # start visualization timer
         self.live_spectrum_update = QTimer()
@@ -119,19 +121,19 @@ class MainWindow(QMainWindow):
             update_text = update_text + "Error connecting to FPGA!\n"
             self.progress_update_label.setText(update_text)
         
-        # print("Connecting to Pan Tilt Mechanism...")
+        print("Connecting to Pan Tilt Mechanism...")
         # update_text = update_text + "Connecting to Pan Tilt Mechanism...\n"
         # self.progress_update_label.setText(update_text)
-        # self.pantilt = PTZ_Controller()
-        # self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
-        # self.pantilt.mode_fast = False
+        self.pantilt = PTZ_Controller()
+        self.pantilt.connect(port=PTZ_PORT, baud=PTZ_BAUD)
+        self.pantilt.mode_fast = True
 
         # if self.pantilt.is_connected():
-        #     update_text = update_text + "Pantilt successfully connected!\n"
-        #     self.progress_update_label.setText(update_text)
+            # update_text = update_text + "Pantilt successfully connected!\n"
+            # self.progress_update_label.setText(update_text)
 
-        #     update_text = update_text + "Setting Pantilt to Home Position...\n"
-        #     self.progress_update_label.setText(update_text)
+            # update_text = update_text + "Setting Pantilt to Home Position...\n"
+            # self.progress_update_label.setText(update_text)
         
         # update_text = update_text + "System Initialization Complete!\n"
         # self.progress_update_label.setText(update_text)
@@ -145,10 +147,103 @@ class MainWindow(QMainWindow):
 
     def request_data_continuously(self):
         while True:
-            if self.fpga.is_connected():
+            if self.fpga.is_connected() and self.pantilt.is_connected():
 
-                print("Reading Antenna data....")
+                self.pantilt.set_pan_position(90)
+                self.df_dynamic.angle_pt = 90
+                # print("Reading Antenna data....")
                 self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 90
+
+                self.pantilt.set_pan_position(67.5)
+                self.df_dynamic.angle_pt = 67.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 67.5
+
+                self.pantilt.set_pan_position(45)
+                self.df_dynamic.angle_pt = 45
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 45
+
+                self.pantilt.set_pan_position(22.5)
+                self.df_dynamic.angle_pt = 22.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 22.5
+
+                self.pantilt.set_pan_position(0)
+                self.df_dynamic.angle_pt = 0
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 0
+
+                self.pantilt.set_pan_position(337.5)
+                self.df_dynamic.angle_pt = -22.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -22.5
+
+                self.pantilt.set_pan_position(315)
+                self.df_dynamic.angle_pt = -45
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -45
+
+                self.pantilt.set_pan_position(292.5)
+                self.df_dynamic.angle_pt = -67.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -67.5
+
+                self.pantilt.set_pan_position(270)
+                self.df_dynamic.angle_pt = -90
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -90
+
+                self.pantilt.set_pan_position(292.5)
+                self.df_dynamic.angle_pt = -67.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -67.5
+
+                self.pantilt.set_pan_position(315)
+                self.df_dynamic.angle_pt = -45
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -45
+
+                self.pantilt.set_pan_position(337.5)
+                self.df_dynamic.angle_pt = -22.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = -22.5
+
+                self.pantilt.set_pan_position(0)
+                self.df_dynamic.angle_pt = 0
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 0
+
+                self.pantilt.set_pan_position(22.5)
+                self.df_dynamic.angle_pt = 22.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 22.5
+
+                self.pantilt.set_pan_position(45)
+                self.df_dynamic.angle_pt = 45
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 45
+
+                self.pantilt.set_pan_position(67.5)
+                self.df_dynamic.angle_pt = 67.5
+                # print("Reading Antenna data....")
+                self.df_dynamic.amplitudes = self.fpga.read_data()
+                self.df_dynamic.angle_pt = 67.5
 
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
@@ -166,8 +261,7 @@ class MainWindow(QMainWindow):
         current_angle = self.df_dynamic.angle_pt
         amplitudes = self.df_dynamic.amplitudes
 
-        if current_angle == 270:
-            current_angle = -90
+        if current_angle == -90:
             self.plot_11.canvas.ax.cla()
             self.plot_11.setTitle("{}° Relative".format(current_angle), fontsize=10)
             self.plot_11.setBackgroundColor('k')
@@ -175,8 +269,7 @@ class MainWindow(QMainWindow):
             self.plot_11.canvas.ax.plot(self.frequencies, amplitudes, 'y')
             self.plot_11.canvas.draw()
 
-        elif current_angle == 297.5:
-            current_angle = -67.5
+        elif current_angle == -67.5:
             self.plot_12.canvas.ax.cla()
             self.plot_12.setTitle("{}° Relative".format(current_angle), fontsize=10)
             self.plot_12.setBackgroundColor('k')
@@ -184,8 +277,7 @@ class MainWindow(QMainWindow):
             self.plot_12.canvas.ax.plot(self.frequencies, amplitudes, 'y')
             self.plot_12.canvas.draw()
 
-        elif current_angle == 315:
-            current_angle = -45
+        elif current_angle == -45:
             self.plot_13.canvas.ax.cla()
             self.plot_13.setTitle("{}° Relative".format(current_angle), fontsize=10)
             self.plot_13.setBackgroundColor('k')
@@ -193,8 +285,7 @@ class MainWindow(QMainWindow):
             self.plot_13.canvas.ax.plot(self.frequencies, amplitudes, 'y')
             self.plot_13.canvas.draw()
 
-        elif current_angle == 337.5:
-            current_angle = -22.5
+        elif current_angle == -22.5:
             self.plot_21.canvas.ax.cla()
             self.plot_21.setTitle("{}° Relative".format(current_angle), fontsize=10)
             self.plot_21.setBackgroundColor('k')
