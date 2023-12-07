@@ -76,7 +76,7 @@ class DF_Data():
     
     @n_sectors.setter
     def n_sectors(self, value):
-        self._n_sectors = value
+        self._n_sectors = int(value)
     
     @property
     def amplitudes(self):
@@ -113,69 +113,24 @@ class DF_Data():
     def initialize_matrix(self):
         self.matrix = np.zeros((self._n_samples, self.n_sectors))
 
-class Antenna_Dyanmaic():
-    def __init__(self) -> None:
-        self.amplitudes = []
 
-    @property
-    def amplitudes(self):
-        return self._amplitudes
-    
-    @amplitudes.setter
-    def amplitudes(self, values):
-        self._amplitudes = values
-
-class Antenna_Static():
-    def __init__(self):
-        
-        self.f1 = 0
-        self.f2 = 0
-        self.n_samples = 0
-        self.beam_width = 20
-    
-    @property
-    def f1(self):
-        return self._f1
-    
-    @property
-    def f2(self):
-        return self._f2
-    
-    @property
-    def n_samples(self):
-        return self._n_samples
-
-    @property
-    def bandwidth(self):
-        return self.f2 - self.f1
-    
-    @property
-    def beam_width(self):
-        return self._beam_width
-    
-    @f1.setter
-    def f1(self, value):
-        self._f1 = value
-
-    @f2.setter
-    def f2(self, value):
-        self._f2 = value
-
-    @n_samples.setter
-    def n_samples(self, value):
-        self._n_samples = value
-
-    @beam_width.setter
-    def beam_width(self, value):
-        self._beam_width = value
-
-    @bandwidth.setter
-    def bandwidth(self, value):
-        self._bandwidth = value
 
 if __name__ == '__main__':
-    static_data = Antenna_Static()
-    print(static_data.__dict__)
+    
+    df_data = DF_Data()
 
-    dynamic_data = Antenna_Dyanmaic()
-    print(dynamic_data.__dict__)
+    df_data.f1 = 400
+    df_data.f2 = 590000
+    df_data.n_samples = 10
+    df_data.amplitudes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    frequencies = list(np.arange(start=df_data.f1, stop=df_data.f2, step=((df_data.f2-df_data.f1)/df_data.n_samples)))
+    df_data.angle_pt = 0
+
+    # print(df_data.current_sector)
+
+    # print(np.zeros((df_data.n_samples, df_data.n_sectors)))
+
+    df_data.initialize_matrix()
+
+    df_data.matrix[:, df_data.current_sector] = df_data.amplitudes
+    print(df_data.matrix)

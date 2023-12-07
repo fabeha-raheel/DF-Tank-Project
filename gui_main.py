@@ -36,8 +36,7 @@ class MainWindow(QMainWindow):
         uic.loadUi('main_test.ui', self)  # Load the UI file
         self.setWindowTitle("DF Tank - Graphical Interface")
 
-        self.df_static = DF_Data_Static()
-        self.df_dynamic = DF_Data_Dynamic()
+        self.df_data = DF_Data()
 
         # self.radarplot = RadarPlot(layout=self.plot_layout)
 
@@ -109,13 +108,21 @@ class MainWindow(QMainWindow):
             data = self.fpga.get_static_data()
 
             if data != -1:
-                self.df_static.f1 = data["_f1"]
-                self.df_static.f2 = data["_f2"]
-                self.df_static.n_samples = data["_n_samples"]
-                self.df_dynamic.amplitudes = self.fpga.dynamic_data.amplitudes
-                self.frequencies = list(np.arange(start=self.df_static.f1, stop=self.df_static.f2, step=((self.df_static.f2-self.df_static.f1)/self.df_static.n_samples)))
+                self.df_data.f1 = data["_f1"]
+                self.df_data.f2 = data["_f2"]
+                self.df_data.n_samples = data["_n_samples"]
+                self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
+                self.frequencies = list(np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples)))
 
-                print(self.df_static.__dict__)
+                self.df_data.angle_pt = 0
+
+                self.df_data.initialize_matrix()
+
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+
+                print("DF Matrix Populated.")
+
+                # print(self.df_data.__dict__)
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
                 self.progress_update_label.setText(update_text)
@@ -136,84 +143,100 @@ class MainWindow(QMainWindow):
             if self.fpga.is_connected() and self.pantilt.is_connected():
 
                 self.pantilt.set_pan_position(90)
-                self.df_dynamic.angle_pt = 90
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 90
+                self.df_data.angle_pt = 90
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 90
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(67.5)
-                self.df_dynamic.angle_pt = 67.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 67.5
+                self.df_data.angle_pt = 67.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 67.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(45)
-                self.df_dynamic.angle_pt = 45
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 45
+                self.df_data.angle_pt = 45
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 45
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(22.5)
-                self.df_dynamic.angle_pt = 22.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 22.5
+                self.df_data.angle_pt = 22.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 22.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(0)
-                self.df_dynamic.angle_pt = 0
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 0
+                self.df_data.angle_pt = 0
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 0
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(337.5)
-                self.df_dynamic.angle_pt = -22.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -22.5
+                self.df_data.angle_pt = -22.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -22.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(315)
-                self.df_dynamic.angle_pt = -45
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -45
+                self.df_data.angle_pt = -45
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -45
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(292.5)
-                self.df_dynamic.angle_pt = -67.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -67.5
+                self.df_data.angle_pt = -67.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -67.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(270)
-                self.df_dynamic.angle_pt = -90
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -90
+                self.df_data.angle_pt = -90
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -90
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(292.5)
-                self.df_dynamic.angle_pt = -67.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -67.5
+                self.df_data.angle_pt = -67.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -67.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(315)
-                self.df_dynamic.angle_pt = -45
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -45
+                self.df_data.angle_pt = -45
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -45
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(337.5)
-                self.df_dynamic.angle_pt = -22.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = -22.5
+                self.df_data.angle_pt = -22.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -22.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(0)
-                self.df_dynamic.angle_pt = 0
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 0
+                self.df_data.angle_pt = 0
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 0
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(22.5)
-                self.df_dynamic.angle_pt = 22.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 22.5
+                self.df_data.angle_pt = 22.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 22.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(45)
-                self.df_dynamic.angle_pt = 45
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 45
+                self.df_data.angle_pt = 45
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 45
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(67.5)
-                self.df_dynamic.angle_pt = 67.5
-                self.df_dynamic.amplitudes = self.fpga.read_data()
-                self.df_dynamic.angle_pt = 67.5
+                self.df_data.angle_pt = 67.5
+                self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 67.5
+                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
