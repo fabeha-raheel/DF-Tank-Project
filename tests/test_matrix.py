@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class DF_Data():
     def __init__(self):
@@ -116,87 +117,67 @@ class DF_Data():
     def normalize_matrix(self):
         self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
         self.lp_matrix = 1 - self.lp_matrix
-        self.lp_matrix = np.round(self.lp_matrix, 4)
+        self.lp_matrix = np.round(self.lp_matrix, 2)
 
-    def radar_plot_data(self):
-        rows, cols = self.lp_matrix.shape
 
-        significant_frequencies = []
-        significant_amplitudes = []
-        significant_angles = []
+def get_amplitudes():
+    my_list = []
+    for i in range(10):
+        my_list.append(random.randint(0, 100))
+    return my_list
 
-        for c in range(cols):
-            for r in range(rows):
-                if self.lp_matrix[r][c] < 0.8:
-                    significant_frequencies.append(self.f1 + (r * (self.bandwidth/self.n_samples)))
-                    significant_amplitudes.append(self.lp_matrix[r][c])
-                    significant_angles.append((c*self.beam_width)+self.alpha1)
+def populate_matrix(matrix):
+    r, c = matrix.shape
+    print("cols: ", c)
+    for col in range(c):
+        matrix[:, col] = get_amplitudes()
+    return matrix
 
-        return (significant_frequencies, significant_angles, significant_amplitudes)
-
-class Antenna_Dyanmaic():
-    def __init__(self) -> None:
-        self.amplitudes = []
-
-    @property
-    def amplitudes(self):
-        return self._amplitudes
-    
-    @amplitudes.setter
-    def amplitudes(self, values):
-        self._amplitudes = values
-
-class Antenna_Static():
-    def __init__(self):
-        
-        self.f1 = 0
-        self.f2 = 0
-        self.n_samples = 0
-        self.beam_width = 20
-    
-    @property
-    def f1(self):
-        return self._f1
-    
-    @property
-    def f2(self):
-        return self._f2
-    
-    @property
-    def n_samples(self):
-        return self._n_samples
-
-    @property
-    def bandwidth(self):
-        return self.f2 - self.f1
-    
-    @property
-    def beam_width(self):
-        return self._beam_width
-    
-    @f1.setter
-    def f1(self, value):
-        self._f1 = value
-
-    @f2.setter
-    def f2(self, value):
-        self._f2 = value
-
-    @n_samples.setter
-    def n_samples(self, value):
-        self._n_samples = value
-
-    @beam_width.setter
-    def beam_width(self, value):
-        self._beam_width = value
-
-    @bandwidth.setter
-    def bandwidth(self, value):
-        self._bandwidth = value
 
 if __name__ == '__main__':
-    static_data = Antenna_Static()
-    print(static_data.__dict__)
+    
+    df_data = DF_Data()
 
-    dynamic_data = Antenna_Dyanmaic()
-    print(dynamic_data.__dict__)
+    df_data.f1 = 400
+    df_data.f2 = 590000
+    df_data.n_samples = 10
+    df_data.amplitudes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    frequencies = list(np.arange(start=df_data.f1, stop=df_data.f2, step=(df_data.bandwidth/df_data.n_samples)))
+    df_data.angle_pt = 90
+
+    # print(df_data.n_sectors)
+
+    # print(df_data.current_sector)
+
+    df_data.initialize_matrix()
+
+    # print(df_data.matrix.shape)
+
+    df_data.matrix[:, df_data.current_sector] = df_data.amplitudes
+    # # df_data.matrix = populate_matrix(df_data.matrix)
+    # print(df_data.matrix)
+
+    df_data.normalize_matrix()
+    print(df_data.lp_matrix)
+
+    # # Extract significant information
+    rows, cols = df_data.lp_matrix.shape
+
+    significant_frequencies = []
+    significant_amplitudes = []
+    significant_angles = []
+
+    for c in range(cols):
+        for r in range(rows):
+            if df_data.lp_matrix[r][c] < 0.8:
+                significant_frequencies.append(df_data.f1 + (r * (df_data.bandwidth/df_data.n_samples)))
+                significant_amplitudes.append(df_data.lp_matrix[r][c])
+                significant_angles.append((c*df_data.beam_width)+df_data.alpha1)
+
+    print("Significant Angles")
+    print(significant_angles)
+    print("Significant Amplitudes")
+    print(significant_amplitudes)
+    print("Significant Frequencies")
+    print(significant_frequencies)
+
