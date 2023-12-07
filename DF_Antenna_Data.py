@@ -76,7 +76,7 @@ class DF_Data():
     
     @n_sectors.setter
     def n_sectors(self, value):
-        self._n_sectors = value
+        self._n_sectors = int(value)
     
     @property
     def amplitudes(self):
@@ -111,10 +111,28 @@ class DF_Data():
         return [(1-(float(i)-min(self._amplitudes))/(max(self._amplitudes)-min(self._amplitudes))) for i in self._amplitudes]
     
     def initialize_matrix(self):
-        self.matrix = np.zeros((self._n_samples, self.n_sectors))
+        self.matrix = np.zeros((self._n_samples, self.n_sectors+1))
 
     def normalize_matrix(self):
         self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
+        self.lp_matrix = 1 - self.lp_matrix
+        self.lp_matrix = np.round(self.lp_matrix, 2)
+
+    def radar_plot_data(self):
+        rows, cols = self.lp_matrix.shape
+
+        significant_frequencies = []
+        significant_amplitudes = []
+        significant_angles = []
+
+        for c in range(cols):
+            for r in range(rows):
+                if self.lp_matrix[r][c] < 0.8:
+                    significant_frequencies.append(self.f1 + (r * (self.bandwidth/self.n_samples)))
+                    significant_amplitudes.append(self.lp_matrix[r][c])
+                    significant_angles.append((c*self.beam_width)+self.alpha1)
+
+        return (significant_frequencies, significant_angles, significant_amplitudes)
 
 class Antenna_Dyanmaic():
     def __init__(self) -> None:
