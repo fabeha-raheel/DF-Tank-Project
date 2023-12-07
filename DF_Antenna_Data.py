@@ -129,7 +129,7 @@ class DF_Data():
             for r in range(rows):
                 if self.lp_matrix[r][c] < 0.8:
                     significant_frequencies.append(self.f1 + (r * (self.bandwidth/self.n_samples)))
-                    significant_amplitudes.append(self.lp_matrix[r][c])
+                    significant_amplitudes.append(self.lp_matrix[r][c] + 0.1)
                     significant_angles.append((c*self.beam_width)+self.alpha1)
 
         return (significant_frequencies, significant_angles, significant_amplitudes)
