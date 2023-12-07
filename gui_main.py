@@ -7,12 +7,12 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon,QPainter,QBrush,QPen,QPolygon, QColor, QFont
 from PyQt5.QtCore import Qt, QPointF,QLineF
-from PyQt5.QtChart import QScatterSeries, QPolarChart, QChart, QChartView, QValueAxis
+# from PyQt5.QtChart import QScatterSeries, QPolarChart, QChart, QChartView, QValueAxis
 
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
 
-from RadarPlot import *
+# from RadarPlot import *
 from mplwidget import *
 
 from xilinx import *
@@ -22,7 +22,7 @@ from PTZ_Controller import *
 FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyCH341USB0'
 PTZ_BAUD = 9600
 
 
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.df_static = DF_Data_Static()
         self.df_dynamic = DF_Data_Dynamic()
 
-        self.radarplot = RadarPlot(layout=self.plot_layout)
+        # self.radarplot = RadarPlot(layout=self.plot_layout)
 
         self.show_page('splash_screen')
         self.timer = QTimer()
