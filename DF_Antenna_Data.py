@@ -1,10 +1,79 @@
-class DF_Data_Dynamic():
+import numpy as np
+
+class DF_Data():
     def __init__(self):
         self.timestamp = None
+        self.f1 = 0
+        self.f2 = 0
+        self.n_samples = 0
+        self.beam_width = 22.5
+        self.alpha1 = -90
+        self.alpha2 = 90
+        self.n_sectors = int((self.alpha2 - self.alpha1)/self.beam_width)
         self.amplitudes = []
         self.angle_pt = 0
         self.heading = 0
 
+    @property
+    def f1(self):
+        return self._f1
+    
+    @f1.setter
+    def f1(self, value):
+        self._f1 = value
+    
+    @property
+    def f2(self):
+        return self._f2
+    
+    @f2.setter
+    def f2(self, value):
+        self._f2 = value
+    
+    @property
+    def n_samples(self):
+        return self._n_samples
+    
+    @n_samples.setter
+    def n_samples(self, value):
+        self._n_samples = value
+
+    @property
+    def bandwidth(self):
+        return self.f2 - self.f1
+    
+    @bandwidth.setter
+    def bandwidth(self, value):
+        self._bandwidth = value
+    
+    @property
+    def beam_width(self):
+        return self._beam_width
+    
+    @beam_width.setter
+    def beam_width(self, value):
+        self._beam_width = value
+    
+    @property
+    def alpha1(self):
+        return self._alpha1
+    
+    @alpha1.setter
+    def alpha1(self, value):
+        self._alpha1 = value
+    
+    @property
+    def alpha2(self):
+        return self._alpha2
+    
+    @alpha2.setter
+    def alpha2(self, value):
+        self._alpha2 = value
+    
+    @property
+    def n_sectors(self):
+        return int((self._alpha2 - self._alpha1)/self._beam_width)
+    
     @property
     def amplitudes(self):
         return self._amplitudes
@@ -32,53 +101,9 @@ class DF_Data_Dynamic():
     @property
     def normalized_amplitudes(self):
         return [(1-(float(i)-min(self._amplitudes))/(max(self._amplitudes)-min(self._amplitudes))) for i in self._amplitudes]
-
-class DF_Data_Static():
-    def __init__(self) -> None:
-        self.f1 = 0
-        self.f2 = 0
-        self.n_samples = 0
-        self.beam_width = 20
-
-    @property
-    def f1(self):
-        return self._f1
     
-    @property
-    def f2(self):
-        return self._f2
-    
-    @property
-    def n_samples(self):
-        return self._n_samples
-
-    @property
-    def bandwidth(self):
-        return self.f2 - self.f1
-    
-    @property
-    def beam_width(self):
-        return self._beam_width
-    
-    @f1.setter
-    def f1(self, value):
-        self._f1 = value
-
-    @f2.setter
-    def f2(self, value):
-        self._f2 = value
-
-    @n_samples.setter
-    def n_samples(self, value):
-        self._n_samples = value
-
-    @beam_width.setter
-    def beam_width(self, value):
-        self._beam_width = value
-
-    @bandwidth.setter
-    def bandwidth(self, value):
-        self._bandwidth = value
+    def initialize_matrix(self):
+        self.matrix = np.zeros(self._n_samples, self.n_sectors)
 
 class Antenna_Dyanmaic():
     def __init__(self) -> None:
