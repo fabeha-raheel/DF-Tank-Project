@@ -2,18 +2,15 @@ import sys
 import numpy as np
 import threading
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget
-from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt5 import uic
 from PyQt5.QtCore import QTimer, pyqtSignal
-from PyQt5.QtGui import QIcon,QPainter,QBrush,QPen,QPolygon, QColor, QFont
-from PyQt5.QtCore import Qt, QPointF,QLineF
-# from PyQt5.QtChart import QScatterSeries, QPolarChart, QChart, QChartView, QValueAxis
 
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
 
-# from RadarPlot import *
 from mplwidget import *
+from mplradar import *
 
 from xilinx import *
 from DF_Antenna_Data import *
@@ -37,8 +34,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("DF Tank - Graphical Interface")
 
         self.df_data = DF_Data()
-
-        # self.radarplot = RadarPlot(layout=self.plot_layout)
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -78,12 +73,9 @@ class MainWindow(QMainWindow):
         self.spectrum_history_update.timeout.connect(self.update_scan_history)
         self.spectrum_history_update.start(100)
 
-        # self.radar_plot.setTicks(self.frequencies)
-
         self.radar_plot_update = QTimer()
         self.radar_plot_update.timeout.connect(self.update_radar_plot)
         self.radar_plot_update.start(100)
-
 
         # start the continuous data acquisition thread
         print("Starting Data Acquisition Thread...")
@@ -122,17 +114,11 @@ class MainWindow(QMainWindow):
 
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                print("DF Matrix Populated.")
-
                 self.radar_plot.set_colorbar(self.frequencies)
 
-                # print(self.df_data.__dict__)
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
                 self.progress_update_label.setText(update_text)
-        # else:
-        #     update_text = update_text + "Error connecting to FPGA!\n"
-        #     self.progress_update_label.setText(update_text)
 
         print("System Initialization complete!")
 
