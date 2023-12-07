@@ -242,103 +242,44 @@ class MainWindow(QMainWindow):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
     def update_radar_plot(self):
+        # get updated data
+        self.df_data.normalize_matrix()
+        updated_data = self.df_data.radar_plot_data()
+        freqs = updated_data[0]
+        angles = updated_data[1]
+        amps = updated_data[2]
+
         self.radar_plot.canvas.ax.cla()
-        self.radar_plot.plotScatterPoints(self.frequencies, self.df_dynamic.normalized_amplitudes, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
+        self.radar_plot.plotScatterPoints(angles, amps, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
         self.radar_plot.canvas.draw()
     
     def redraw_spectrum(self):
         self.plot_0.canvas.ax.cla()
-        self.plot_0.setTitle("{}° Relative".format(self.df_dynamic.angle_pt), fontsize=10)
+        self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
         self.plot_0.setBackgroundColor('k')
         self.plot_0.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
         # self.plot_0.setLimits()
-        self.plot_0.canvas.ax.plot(self.frequencies, self.df_dynamic.amplitudes, 'y')
+        self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
         self.plot_0.canvas.draw()
 
     def update_scan_history(self):
-        current_angle = self.df_dynamic.angle_pt
-        amplitudes = self.df_dynamic.amplitudes
 
-        if current_angle == -90:
-            self.plot_11.canvas.ax.cla()
-            self.plot_11.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_11.setBackgroundColor('k')
-            self.plot_11.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_11.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_11.canvas.draw()
+        self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
-        elif current_angle == -67.5:
-            self.plot_12.canvas.ax.cla()
-            self.plot_12.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_12.setBackgroundColor('k')
-            self.plot_12.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_12.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_12.canvas.draw()
-
-        elif current_angle == -45:
-            self.plot_13.canvas.ax.cla()
-            self.plot_13.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_13.setBackgroundColor('k')
-            self.plot_13.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_13.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_13.canvas.draw()
-
-        elif current_angle == -22.5:
-            self.plot_21.canvas.ax.cla()
-            self.plot_21.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_21.setBackgroundColor('k')
-            self.plot_21.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_21.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_21.canvas.draw()
-
-        elif current_angle == 0 or current_angle == 360:
-            current_angle = 0
-            self.plot_22.canvas.ax.cla()
-            self.plot_22.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_22.setBackgroundColor('k')
-            self.plot_22.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_22.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_22.canvas.draw()
-
-        elif current_angle == 22.5:
-            self.plot_23.canvas.ax.cla()
-            self.plot_23.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_23.setBackgroundColor('k')
-            self.plot_23.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_23.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_23.canvas.draw()
-
-        elif current_angle == 45:
-            self.plot_31.canvas.ax.cla()
-            self.plot_31.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_31.setBackgroundColor('k')
-            self.plot_31.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_31.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_31.canvas.draw()
-
-        elif current_angle == 67.5:
-            self.plot_32.canvas.ax.cla()
-            self.plot_32.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_32.setBackgroundColor('k')
-            self.plot_32.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_32.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_32.canvas.draw()
-
-        elif current_angle == 90:
-            self.plot_33.canvas.ax.cla()
-            self.plot_33.setTitle("{}° Relative".format(current_angle), fontsize=10)
-            self.plot_33.setBackgroundColor('k')
-            self.plot_33.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_33.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            self.plot_33.canvas.draw()
-
-        else:
-            print("Some other angle is specified... Cannot update spectrum history")
+        for i in range(self.df_data.n_sectors+1):
+            amplitudes = self.df_data.matrix[:, i]
+            plot = self.plot_matrix[i]
+            plot.canvas.ax.cla()
+            plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+            plot.setBackgroundColor('k')
+            plot.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=5)
+            plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+            plot.canvas.draw()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.showMaximized()
-    # main_window.show()
+    # main_window.showMaximized()
+    main_window.show()
     sys.exit(app.exec_())
