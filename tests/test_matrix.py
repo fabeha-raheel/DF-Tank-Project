@@ -113,7 +113,8 @@ class DF_Data():
     def initialize_matrix(self):
         self.matrix = np.zeros((self._n_samples, self.n_sectors))
 
-
+    def normalize_matrix(self):
+        self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
 
 if __name__ == '__main__':
     
@@ -133,4 +134,6 @@ if __name__ == '__main__':
     df_data.initialize_matrix()
 
     df_data.matrix[:, df_data.current_sector] = df_data.amplitudes
-    print(df_data.matrix)
+
+    df_data.normalize_matrix()
+    print(df_data.lp_matrix)

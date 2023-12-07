@@ -113,6 +113,9 @@ class DF_Data():
     def initialize_matrix(self):
         self.matrix = np.zeros((self._n_samples, self.n_sectors))
 
+    def normalize_matrix(self):
+        self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
+
 class Antenna_Dyanmaic():
     def __init__(self) -> None:
         self.amplitudes = []
