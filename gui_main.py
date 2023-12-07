@@ -9,6 +9,9 @@ from PyQt5.QtCore import QTimer, pyqtSignal
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
 
+import rospy
+from std_msgs.msg import Float64
+
 from mplwidget import *
 from mplradar import *
 
@@ -19,7 +22,7 @@ from PTZ_Controller import *
 FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyCH341USB0'
+PTZ_PORT = '/dev/ttyUSB1'
 PTZ_BAUD = 9600
 
 
@@ -44,6 +47,8 @@ class MainWindow(QMainWindow):
         self.initialization_complete.connect(self.goto_visualization)
 
         self.cycle_complete = True
+
+        self.init_ros_heading_subscriber()
 
         self.initialize()
 
@@ -234,6 +239,14 @@ class MainWindow(QMainWindow):
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
+    def ros_heading_cb(self, mssg):
+        self.df_data.heading = mssg.data
+        rospy.loginfo("Heading %s", mssg.data)
+
+    def init_ros_heading_subscriber(self):
+        rospy.init_node('compass_data', anonymous=True)
+        rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+
     def update_radar_plot(self):
 
         if self.cycle_complete:
@@ -247,11 +260,6 @@ class MainWindow(QMainWindow):
             for i in range(len(angles)):
                 if angles[i] < 0:
                     angles[i] = 360 + angles[i]
-
-            print("Significant angles")
-            print(angles)
-            print("Significant amplitudes")
-            print(amps)
 
             self.radar_plot.canvas.ax.cla()
             # self.radar_plot.plotScatterPoints(angles, amps, size=100, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
@@ -282,7 +290,10 @@ class MainWindow(QMainWindow):
             plot.canvas.draw()
 
 
+
+
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     main_window = MainWindow()
     # main_window.showMaximized()
