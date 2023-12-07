@@ -48,6 +48,8 @@ class MainWindow(QMainWindow):
 
         self.initialization_complete.connect(self.goto_visualization)
 
+        self.cycle_complete = False
+
         self.initialize()
 
     def show_page(self, page_name):
@@ -196,6 +198,8 @@ class MainWindow(QMainWindow):
                 self.df_data.angle_pt = -90
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
+                self.cycle_complete = True
+
                 self.pantilt.set_pan_position(292.5)
                 self.df_data.angle_pt = -67.5
                 self.df_data.amplitudes = self.fpga.read_data()
@@ -238,20 +242,32 @@ class MainWindow(QMainWindow):
                 self.df_data.angle_pt = 67.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
+                
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
     def update_radar_plot(self):
-        # get updated data
-        self.df_data.normalize_matrix()
-        updated_data = self.df_data.radar_plot_data()
-        freqs = updated_data[0]
-        angles = updated_data[1]
-        amps = updated_data[2]
 
-        self.radar_plot.canvas.ax.cla()
-        self.radar_plot.plotScatterPoints(angles, amps, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
-        self.radar_plot.canvas.draw()
+        if self.cycle_complete:
+            # get updated data
+            self.df_data.normalize_matrix()
+            updated_data = self.df_data.radar_plot_data()
+            freqs = updated_data[0]
+            angles = updated_data[1]
+            amps = updated_data[2]
+
+            for i in range(len(angles)):
+                if angles[i] < 0:
+                    angles[i] = 360 + angles[i]
+
+            print("Significant angles")
+            print(angles)
+            print("Significant amplitudes")
+            print(amps)
+
+            self.radar_plot.canvas.ax.cla()
+            self.radar_plot.plotScatterPoints(angles, amps, size=100, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
+            self.radar_plot.canvas.draw()
     
     def redraw_spectrum(self):
         self.plot_0.canvas.ax.cla()

@@ -45,8 +45,8 @@ class MplRadar(QWidget):
     def setAxisColor(self, color):
         self.canvas.set_axis_color(color)
     
-    def plotScatterPoints(self, theta, r, color='blue', marker='o', label=None, edgecolors=None):
-        self.canvas.plot_scatter_points(theta, r, color, marker, label, edgecolors=edgecolors)
+    def plotScatterPoints(self, theta, r, size, color='blue', marker='o', label=None, edgecolors=None):
+        self.canvas.plot_scatter_points(theta, r, size, color, marker, label, edgecolors=edgecolors)
         
         
 class MplRadarCanvas(FigureCanvas):
@@ -64,10 +64,11 @@ class MplRadarCanvas(FigureCanvas):
 
         
 
-        self.ax.set_rmax(2)
-        self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
-        self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+        # self.ax.set_rmax(2)
+        # self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
+        # self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
         self.ax.grid(True)
+        
 
     def set_axis_color(self, color):
         self.ax.spines['polar'].set_color(color)
@@ -75,7 +76,8 @@ class MplRadarCanvas(FigureCanvas):
         self.ax.tick_params(axis='x', colors=color)
         self.ax.tick_params(axis='y', colors=color)
 
-    def plot_scatter_points(self, theta, r, color, marker, label, edgecolors=None):
-        
-        self.ax.scatter(theta, r, s=30, c=color, marker=marker, label=label, edgecolors=edgecolors)
+    def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
+        self.ax.set_ylim(0, 1)
+        # self.ax.set_yticks(np.arange(0,0.5,1))
+        self.ax.scatter(np.radians(theta), r, s=size, c=color, marker=marker, label=label, edgecolors=edgecolors)
         
