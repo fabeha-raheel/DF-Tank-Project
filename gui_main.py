@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
 
         self.initialization_complete.connect(self.goto_visualization)
 
-        self.cycle_complete = False
+        self.cycle_complete = True
 
         self.initialize()
 
@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(0)
+        self.TabWidget.setCurrentIndex(1)
 
         # start visualization timer
         self.live_spectrum_update = QTimer()
@@ -123,6 +123,8 @@ class MainWindow(QMainWindow):
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 print("DF Matrix Populated.")
+
+                self.radar_plot.set_colorbar(self.frequencies)
 
                 # print(self.df_data.__dict__)
             else:
@@ -266,7 +268,8 @@ class MainWindow(QMainWindow):
             print(amps)
 
             self.radar_plot.canvas.ax.cla()
-            self.radar_plot.plotScatterPoints(angles, amps, size=100, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
+            # self.radar_plot.plotScatterPoints(angles, amps, size=100, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
+            self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
             self.radar_plot.canvas.draw()
     
     def redraw_spectrum(self):

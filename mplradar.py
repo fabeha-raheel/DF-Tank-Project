@@ -47,6 +47,10 @@ class MplRadar(QWidget):
     
     def plotScatterPoints(self, theta, r, size, color='blue', marker='o', label=None, edgecolors=None):
         self.canvas.plot_scatter_points(theta, r, size, color, marker, label, edgecolors=edgecolors)
+    
+    def set_colorbar(self, freqs):
+        self.map = self.canvas.ax.imshow(np.stack([freqs, freqs]),cmap='gist_rainbow')
+        self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
         
         
 class MplRadarCanvas(FigureCanvas):
@@ -78,6 +82,5 @@ class MplRadarCanvas(FigureCanvas):
 
     def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
         self.ax.set_ylim(0, 1)
-        # self.ax.set_yticks(np.arange(0,0.5,1))
-        self.ax.scatter(np.radians(theta), r, s=size, c=color, marker=marker, label=label, edgecolors=edgecolors)
+        self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)
         
