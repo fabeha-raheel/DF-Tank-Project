@@ -241,13 +241,21 @@ class MainWindow(QMainWindow):
 
     def ros_heading_cb(self, mssg):
         self.df_data.heading = mssg.data
-        rospy.loginfo("Heading %s", mssg.data)
+        # rospy.loginfo("Heading %s", mssg.data)
 
     def init_ros_heading_subscriber(self):
         rospy.init_node('compass_data', anonymous=True)
         rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
     def update_radar_plot(self):
+        if self.df_data.heading > 180:
+            self.tank_heading.setText(str(int(self.df_data.heading)-360)+" °N")
+            self.antenna_heading.setText(str((int(self.df_data.heading)-360)+self.df_data.angle_pt)+" °N")
+        else:
+            self.tank_heading.setText(str(int(self.df_data.heading))+" °N")
+            self.antenna_heading.setText(str((int(self.df_data.heading)-360)+self.df_data.angle_pt)+" °N")
+
+
 
         if self.cycle_complete:
             # get updated data
