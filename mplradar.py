@@ -50,7 +50,14 @@ class MplRadar(QWidget):
     
     def set_colorbar(self, freqs):
         self.map = self.canvas.ax.imshow(np.stack([freqs, freqs]),cmap='gist_rainbow')
-        self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
+        colorbar = self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
+
+        tick_labels = colorbar.ax.get_yticklabels()
+        for label in tick_labels:
+            label.set_color('silver')
+        colorbar.set_ticks(colorbar.get_ticks())
+        colorbar.set_ticklabels([f"{val:.2f} Hz" for val in colorbar.get_ticks()])
+
         
         
 class MplRadarCanvas(FigureCanvas):

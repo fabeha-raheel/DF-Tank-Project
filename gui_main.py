@@ -310,8 +310,6 @@ class MainWindow(QMainWindow):
             return int(antenna_heading)
 
 
-
-
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
