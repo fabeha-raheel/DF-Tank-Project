@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+# from sklearn.preprocessing import MinMaxScaler
 
 class DF_Data():
     def __init__(self):

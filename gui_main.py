@@ -19,11 +19,11 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
+FPGA_PORT = '/dev/ttyUSB1'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
 
