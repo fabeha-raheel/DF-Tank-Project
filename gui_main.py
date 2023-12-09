@@ -22,7 +22,7 @@ from PTZ_Controller import *
 FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyCH341USB0'
 PTZ_BAUD = 9600
 
 
@@ -70,17 +70,21 @@ class MainWindow(QMainWindow):
         self.TabWidget.setCurrentIndex(1)
 
         # start visualization timer
-        self.live_spectrum_update = QTimer()
-        self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
-        self.live_spectrum_update.start(100)
+        self.update_timer = QTimer()
+        self.update_timer.timeout.connect(self.update_all_figures)
+        self.update_timer.start(100)
 
-        self.spectrum_history_update = QTimer()
-        self.spectrum_history_update.timeout.connect(self.update_scan_history)
-        self.spectrum_history_update.start(100)
+        # self.live_spectrum_update = QTimer()
+        # self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
+        # self.live_spectrum_update.start(100)
 
-        self.radar_plot_update = QTimer()
-        self.radar_plot_update.timeout.connect(self.update_radar_plot)
-        self.radar_plot_update.start(100)
+        # self.spectrum_history_update = QTimer()
+        # self.spectrum_history_update.timeout.connect(self.update_scan_history)
+        # self.spectrum_history_update.start(100)
+
+        # self.radar_plot_update = QTimer()
+        # self.radar_plot_update.timeout.connect(self.update_radar_plot)
+        # self.radar_plot_update.start(100)
 
         # start the continuous data acquisition thread
         print("Starting Data Acquisition Thread...")
@@ -246,6 +250,11 @@ class MainWindow(QMainWindow):
     def init_ros_heading_subscriber(self):
         rospy.init_node('compass_data', anonymous=True)
         rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+
+    def update_all_figures(self):
+        self.update_radar_plot()
+        self.redraw_spectrum()
+        self.update_scan_history()
 
     def update_radar_plot(self):
 
