@@ -19,10 +19,10 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB1'      # port for Linux / Ubuntu
+FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyUSB0'
+PTZ_PORT = '/dev/ttyCH341USB0'
 PTZ_BAUD = 9600
 
 
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
 
         self.cycle_complete = True
 
-        self.init_ros_heading_subscriber()
+        # self.init_ros_heading_subscriber()
 
         self.initialize()
 
@@ -243,13 +243,13 @@ class MainWindow(QMainWindow):
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
-    def ros_heading_cb(self, mssg):
-        self.df_data.heading = mssg.data
-        # rospy.loginfo("Heading %s", mssg.data)
+    # def ros_heading_cb(self, mssg):
+    #     self.df_data.heading = mssg.data
+    #     # rospy.loginfo("Heading %s", mssg.data)
 
-    def init_ros_heading_subscriber(self):
-        rospy.init_node('compass_data', anonymous=True)
-        rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+    # def init_ros_heading_subscriber(self):
+    #     rospy.init_node('compass_data', anonymous=True)
+    #     rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
     def update_radar_plot(self):
 
