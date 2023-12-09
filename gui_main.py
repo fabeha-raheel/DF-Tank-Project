@@ -4,7 +4,7 @@ import threading
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtCore import QTimer, pyqtSignal, QThread
 
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
@@ -22,7 +22,8 @@ from PTZ_Controller import *
 FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyCH341USB0'
+# PTZ_PORT = '/dev/ttyCH341USB0'
+PTZ_PORT = '/dev/ttyUSB1'
 PTZ_BAUD = 9600
 
 

@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 class DF_Data():
     def __init__(self):
@@ -114,9 +115,13 @@ class DF_Data():
         self.matrix = np.zeros((self._n_samples, self.n_sectors+1))
 
     def normalize_matrix(self):
-        self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
-        self.lp_matrix = 1 - self.lp_matrix
-        self.lp_matrix = np.round(self.lp_matrix, 4)
+        scaler = MinMaxScaler()
+        scaler.fit(self.matrix)
+        self.lp_matrix = 1 - scaler.transform(self.matrix)
+
+        # self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
+        # self.lp_matrix = 1 - self.lp_matrix
+        # self.lp_matrix = np.round(self.lp_matrix, 4)
 
     def radar_plot_data(self):
         rows, cols = self.lp_matrix.shape
