@@ -280,8 +280,6 @@ class MainWindow(QMainWindow):
         plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
         plot.canvas.draw()
 
-        
-
         # for i in range(self.df_data.n_sectors+1):
         #     amplitudes = self.df_data.matrix[:, i]
         #     plot = self.plot_matrix[i]
