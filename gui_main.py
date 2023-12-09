@@ -19,11 +19,11 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
+FPGA_PORT = '/dev/ttyUSB0'
 FPGA_BAUD = 115200
 
-PTZ_PORT = '/dev/ttyCH341USB0'
-# PTZ_PORT = '/dev/ttyUSB0'
+# PTZ_PORT = '/dev/ttyCH341USB0'
+PTZ_PORT = '/dev/ttyUSB1'
 PTZ_BAUD = 9600
 
 
@@ -38,6 +38,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("DF Tank - Graphical Interface")
 
         self.df_data = DF_Data()
+
+        self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -68,14 +70,9 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(0)
+        self.TabWidget.setCurrentIndex(1)
 
         # start visualization timer
-        self.set_plot_decorations()
-        # self.update_timer = QTimer()
-        # self.update_timer.timeout.connect(self.update_all_figures)
-        # self.update_timer.start(500)
-
         self.live_spectrum_update = QTimer()
         self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
         self.live_spectrum_update.start(500)
@@ -130,13 +127,10 @@ class MainWindow(QMainWindow):
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.radar_plot.set_colorbar(self.frequencies)
-                print("Done reading data from antenna")
 
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
                 self.progress_update_label.setText(update_text)
-
-        self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
         print("System Initialization complete!")
 
@@ -244,11 +238,6 @@ class MainWindow(QMainWindow):
     #     rospy.init_node('compass_data', anonymous=True)
     #     rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
-    def update_all_figures(self):
-        self.update_radar_plot()
-        self.redraw_spectrum()
-        self.update_scan_history()
-
     def update_radar_plot(self):
 
         self.tank_heading.setText(str(self.get_tank_heading())+" °N")
@@ -272,19 +261,23 @@ class MainWindow(QMainWindow):
     
     def redraw_spectrum(self):
         self.plot_0.canvas.ax.cla()
-        # self.plot_0.setLimits()
         self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
+        self.plot_0.setBackgroundColor('k')
+        self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
+        # self.plot_0.setLimits()
         self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
         self.plot_0.canvas.draw()
 
     def update_scan_history(self):
 
-        sector = self.df_data.current_sector-1
+        sector = self.df_data.current_sector
 
         amplitudes = self.df_data.matrix[:, sector]
         plot = self.plot_matrix[sector]
         plot.canvas.ax.cla()
         plot.setTitle("{}° Relative".format((sector*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+        plot.setBackgroundColor('k')
+        plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
         plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
         plot.canvas.draw()
 
@@ -293,17 +286,10 @@ class MainWindow(QMainWindow):
         #     plot = self.plot_matrix[i]
         #     plot.canvas.ax.cla()
         #     plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+        #     plot.setBackgroundColor('k')
+        #     plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
         #     plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
         #     plot.canvas.draw()
-
-    def set_plot_decorations(self):
-        self.plot_0.setBackgroundColor('k')
-        self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-
-        for i in range(self.df_data.n_sectors + 1):
-            plot = self.plot_matrix[i]
-            plot.setBackgroundColor('k')
-            plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
