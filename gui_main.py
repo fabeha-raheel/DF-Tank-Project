@@ -248,15 +248,10 @@ class MainWindow(QMainWindow):
         rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
     def update_radar_plot(self):
-        if self.df_data.heading > 180:
-            self.tank_heading.setText(str(int(self.df_data.heading)-360)+" °N")
-            self.antenna_heading.setText(str((int(self.df_data.heading)-360)+self.df_data.angle_pt)+" °N")
-        else:
-            self.tank_heading.setText(str(int(self.df_data.heading))+" °N")
-            self.antenna_heading.setText(str((int(self.df_data.heading)-360)+self.df_data.angle_pt)+" °N")
 
-
-
+        self.tank_heading.setText(str(self.get_tank_heading())+" °N")
+        self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
+            
         if self.cycle_complete:
             # get updated data
             self.df_data.normalize_matrix()
@@ -296,6 +291,23 @@ class MainWindow(QMainWindow):
             plot.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=5)
             plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
             plot.canvas.draw()
+
+    def get_tank_heading(self):
+        if self.df_data.heading > 180:
+            return int(self.df_data.heading)-360
+        else:
+            return int(self.df_data.heading)
+        
+    def get_antenna_heading(self):
+        # antenna_heading = (self.df_data.heading + self.df_data.angle_pt)
+        antenna_heading = (self.get_tank_heading() + self.df_data.angle_pt)
+
+        if antenna_heading > 180:
+            return int(antenna_heading-360)
+        elif antenna_heading < -180:
+            return int(antenna_heading + 360)
+        else:
+            return int(antenna_heading)
 
 
 
