@@ -4,7 +4,7 @@ import threading
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, pyqtSignal, QThread
+from PyQt5.QtCore import QTimer, pyqtSignal
 
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
@@ -22,8 +22,7 @@ from PTZ_Controller import *
 FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
 FPGA_BAUD = 115200
 
-# PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyCH341USB0'
 PTZ_BAUD = 9600
 
 
@@ -68,25 +67,25 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(1)
+        self.TabWidget.setCurrentIndex(0)
 
         # start visualization timer
         self.set_plot_decorations()
-        self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.update_all_figures)
-        self.update_timer.start(500)
+        # self.update_timer = QTimer()
+        # self.update_timer.timeout.connect(self.update_all_figures)
+        # self.update_timer.start(500)
 
-        # self.live_spectrum_update = QTimer()
-        # self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
-        # self.live_spectrum_update.start(100)
+        self.live_spectrum_update = QTimer()
+        self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
+        self.live_spectrum_update.start(500)
 
-        # self.spectrum_history_update = QTimer()
-        # self.spectrum_history_update.timeout.connect(self.update_scan_history)
-        # self.spectrum_history_update.start(100)
+        self.spectrum_history_update = QTimer()
+        self.spectrum_history_update.timeout.connect(self.update_scan_history)
+        self.spectrum_history_update.start(500)
 
-        # self.radar_plot_update = QTimer()
-        # self.radar_plot_update.timeout.connect(self.update_radar_plot)
-        # self.radar_plot_update.start(100)
+        self.radar_plot_update = QTimer()
+        self.radar_plot_update.timeout.connect(self.update_radar_plot)
+        self.radar_plot_update.start(500)
 
         # start the continuous data acquisition thread
         print("Starting Data Acquisition Thread...")
@@ -130,6 +129,7 @@ class MainWindow(QMainWindow):
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.radar_plot.set_colorbar(self.frequencies)
+                print("Done reading data from antenna")
 
             else:
                 update_text = update_text + "Error acquiring Antenna Data...\n"
