@@ -115,7 +115,11 @@ class MainWindow(QMainWindow):
                 self.df_data.f2 = data["_f2"]
                 self.df_data.n_samples = data["_n_samples"]
                 self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
-                self.frequencies = list(np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples)))
+                self.frequencies_range_hz = np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples))
+
+                self.frequencies_range_Mhz = self.frequencies_range_hz / 1000000
+
+                self.frequencies = list(self.frequencies_range_Mhz)
 
                 self.df_data.angle_pt = 0
 
@@ -274,7 +278,6 @@ class MainWindow(QMainWindow):
                     angles[i] = 360 + angles[i]
 
             self.radar_plot.canvas.ax.cla()
-            # self.radar_plot.plotScatterPoints(angles, amps, size=100, color='#1ba3b3', marker='o', label='Scatter Points', edgecolors='white')
             self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
             self.radar_plot.canvas.draw()
     
@@ -282,7 +285,7 @@ class MainWindow(QMainWindow):
         self.plot_0.canvas.ax.cla()
         self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
         self.plot_0.setBackgroundColor('k')
-        self.plot_0.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
+        self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
         # self.plot_0.setLimits()
         self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
         self.plot_0.canvas.draw()
@@ -297,7 +300,7 @@ class MainWindow(QMainWindow):
             plot.canvas.ax.cla()
             plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
             plot.setBackgroundColor('k')
-            plot.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=5)
+            plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
             plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
             plot.canvas.draw()
 
@@ -317,8 +320,6 @@ class MainWindow(QMainWindow):
             return int(antenna_heading + 360)
         else:
             return int(antenna_heading)
-
-
 
 
 if __name__ == '__main__':

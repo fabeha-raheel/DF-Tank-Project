@@ -49,8 +49,16 @@ class MplRadar(QWidget):
         self.canvas.plot_scatter_points(theta, r, size, color, marker, label, edgecolors=edgecolors)
     
     def set_colorbar(self, freqs):
+        # freqs = freqs/1000000
         self.map = self.canvas.ax.imshow(np.stack([freqs, freqs]),cmap='gist_rainbow')
-        self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
+        colorbar = self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
+
+        tick_labels = colorbar.ax.get_yticklabels()
+        for label in tick_labels:
+            label.set_color('silver')
+        colorbar.set_ticks(colorbar.get_ticks())
+        colorbar.set_ticklabels([f"{val:.0f} MHz" for val in colorbar.get_ticks()])
+
         
         
 class MplRadarCanvas(FigureCanvas):
