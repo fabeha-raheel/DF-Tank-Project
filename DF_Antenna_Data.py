@@ -1,5 +1,4 @@
 import numpy as np
-# from sklearn.preprocessing import MinMaxScaler
 
 class DF_Data():
     def __init__(self):
@@ -115,10 +114,6 @@ class DF_Data():
         self.matrix = np.zeros((self._n_samples, self.n_sectors+1))
 
     def normalize_matrix(self):
-        # scaler = MinMaxScaler()
-        # scaler.fit(self.matrix)
-        # self.lp_matrix = 1 - scaler.transform(self.matrix)
-
         self.lp_matrix = (self.matrix - self.matrix.min()) / (self.matrix.max() - self.matrix.min())
         self.lp_matrix = 1 - self.lp_matrix
         self.lp_matrix = np.round(self.lp_matrix, 4)
@@ -132,16 +127,12 @@ class DF_Data():
 
         for c in range(cols):
             for r in range(rows):
-                if self.lp_matrix[r][c] < 0.6:
+                if self.lp_matrix[r][c] < 0.8:
                     significant_frequencies.append(self.f1 + (r * (self.bandwidth/self.n_samples)))
                     significant_amplitudes.append(self.lp_matrix[r][c] + 0.1)
                     significant_angles.append((c*self.beam_width)+self.alpha1)
 
-        if len(significant_amplitudes) > 4:
-
-            return (significant_frequencies[:4], significant_angles[:4], significant_amplitudes[:4])
-        else:
-            return (significant_frequencies, significant_angles, significant_amplitudes)
+        return (significant_frequencies, significant_angles, significant_amplitudes)
 
 class Antenna_Dyanmaic():
     def __init__(self) -> None:
