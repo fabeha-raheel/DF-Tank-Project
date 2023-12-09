@@ -38,6 +38,8 @@ class MainWindow(QMainWindow):
 
         self.df_data = DF_Data()
 
+        self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
+
         self.show_page('splash_screen')
         self.timer = QTimer()
         self.progressValue = 0
@@ -267,17 +269,28 @@ class MainWindow(QMainWindow):
 
     def update_scan_history(self):
 
-        self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
+        sector = self.df_data.current_sector
 
-        for i in range(self.df_data.n_sectors+1):
-            amplitudes = self.df_data.matrix[:, i]
-            plot = self.plot_matrix[i]
-            plot.canvas.ax.cla()
-            plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-            plot.setBackgroundColor('k')
-            plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
-            plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-            plot.canvas.draw()
+        amplitudes = self.df_data.matrix[:, sector]
+        plot = self.plot_matrix[sector]
+        plot.canvas.ax.cla()
+        plot.setTitle("{}° Relative".format((sector*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+        plot.setBackgroundColor('k')
+        plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
+        plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+        plot.canvas.draw()
+
+        
+
+        # for i in range(self.df_data.n_sectors+1):
+        #     amplitudes = self.df_data.matrix[:, i]
+        #     plot = self.plot_matrix[i]
+        #     plot.canvas.ax.cla()
+        #     plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+        #     plot.setBackgroundColor('k')
+        #     plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
+        #     plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+        #     plot.canvas.draw()
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
