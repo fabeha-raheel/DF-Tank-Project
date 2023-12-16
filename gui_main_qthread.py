@@ -19,11 +19,11 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB0'
+FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
 class Worker(QRunnable):
@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
         self.threadpool = QThreadPool()
 
-        # self.init_ros_heading_subscriber()
+        self.init_ros_heading_subscriber()
 
         self.initialize()
 
@@ -129,31 +129,32 @@ class MainWindow(QMainWindow):
 
         if self.fpga.is_connected():
 
-            print("Reading Antenna data....")
-            data = self.fpga.get_static_data()
+            while True:
+                print("Reading Antenna data....")
+                data = self.fpga.get_static_data()
 
-            if data != -1:
-                self.df_data.f1 = data["_f1"]
-                self.df_data.f2 = data["_f2"]
-                self.df_data.n_samples = data["_n_samples"]
-                self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
-                self.frequencies_range_hz = np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples))
+                if data != -1:
+                    self.df_data.f1 = data["_f1"]
+                    self.df_data.f2 = data["_f2"]
+                    self.df_data.n_samples = data["_n_samples"]
+                    self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
 
-                self.frequencies_range_Mhz = self.frequencies_range_hz / 1000000
+                if len(self.df_data.amplitudes) == self.df_data.n_samples:
+                    break
+            
+            self.frequencies_range_hz = np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples))
 
-                self.frequencies = list(self.frequencies_range_Mhz)
+            self.frequencies_range_Mhz = self.frequencies_range_hz / 1000000
 
-                self.df_data.angle_pt = 0
+            self.frequencies = list(self.frequencies_range_Mhz)
 
-                self.df_data.initialize_matrix()
+            self.df_data.angle_pt = 0
 
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            self.df_data.initialize_matrix()
 
-                self.radar_plot.set_colorbar(self.frequencies)
+            self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-            else:
-                update_text = update_text + "Error acquiring Antenna Data...\n"
-                self.progress_update_label.setText(update_text)
+            self.radar_plot.set_colorbar(self.frequencies)
 
         print("System Initialization complete!")
 
@@ -168,94 +169,94 @@ class MainWindow(QMainWindow):
             if self.fpga.is_connected() and self.pantilt.is_connected():
 
                 self.pantilt.set_pan_position(90)
-                self.df_data.angle_pt = 90
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 90
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(67.5)
-                self.df_data.angle_pt = 67.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 67.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(45)
-                self.df_data.angle_pt = 45
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 45
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(22.5)
-                self.df_data.angle_pt = 22.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 22.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(0)
-                self.df_data.angle_pt = 0
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 0
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(337.5)
-                self.df_data.angle_pt = -22.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -22.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(315)
-                self.df_data.angle_pt = -45
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -45
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(292.5)
-                self.df_data.angle_pt = -67.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -67.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(270)
-                self.df_data.angle_pt = -90
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -90
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.cycle_complete = True
 
                 self.pantilt.set_pan_position(292.5)
-                self.df_data.angle_pt = -67.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -67.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(315)
-                self.df_data.angle_pt = -45
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -45
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(337.5)
-                self.df_data.angle_pt = -22.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = -22.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(0)
-                self.df_data.angle_pt = 0
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 0
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(22.5)
-                self.df_data.angle_pt = 22.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 22.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(45)
-                self.df_data.angle_pt = 45
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 45
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
                 self.pantilt.set_pan_position(67.5)
-                self.df_data.angle_pt = 67.5
                 self.df_data.amplitudes = self.fpga.read_data()
+                self.df_data.angle_pt = 67.5
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-    # def ros_heading_cb(self, mssg):
-    #     self.df_data.heading = mssg.data
-    #     # rospy.loginfo("Heading %s", mssg.data)
+    def ros_heading_cb(self, mssg):
+        self.df_data.heading = mssg.data
+        # rospy.loginfo("Heading %s", mssg.data)
 
-    # def init_ros_heading_subscriber(self):
-    #     rospy.init_node('compass_data', anonymous=True)
-    #     rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+    def init_ros_heading_subscriber(self):
+        rospy.init_node('compass_data', anonymous=True)
+        rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
     def update_radar_plot(self):
 
