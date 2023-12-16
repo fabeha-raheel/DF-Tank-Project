@@ -261,6 +261,7 @@ class MainWindow(QMainWindow):
     def update_radar_plot(self):
 
         while True:
+            print("Refreshing radar plot")
 
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
@@ -280,6 +281,8 @@ class MainWindow(QMainWindow):
                 self.radar_plot.canvas.ax.cla()
                 self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
                 self.radar_plot.canvas.draw()
+                
+                time.sleep(0.5)
     
     def redraw_spectrum(self):
         
@@ -292,19 +295,9 @@ class MainWindow(QMainWindow):
             self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
             self.plot_0.canvas.draw()
 
+            time.sleep(0.5)
+
     def update_scan_history(self):
-
-        # sector = self.df_data.current_sector
-
-        # amplitudes = self.df_data.matrix[:, sector]
-        # plot = self.plot_matrix[sector]
-        # plot.refresh_plot(self.frequencies, amplitudes)
-        # # plot.canvas.ax.cla()
-        # plot.setTitle("{}° Relative".format((sector*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-        # plot.setBackgroundColor('k')
-        # plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
-        # # plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-        # # plot.canvas.draw()
 
         while True:
             for i in range(self.df_data.n_sectors+1):
@@ -316,6 +309,8 @@ class MainWindow(QMainWindow):
                 plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
                 plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
                 plot.canvas.draw()
+
+                time.sleep(0.5)
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:

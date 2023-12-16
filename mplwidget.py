@@ -18,8 +18,6 @@ class MplWidget(QWidget):
         
         self.canvas = MplCanvas()
         # self.mpl_toolbar = NavigationToolbar(self.canvas, self)
-        
-        self.line = self.canvas.ax.plot(self.xdata, self.ydata, 'y')
 
         vertical_layout = QVBoxLayout()
         # vertical_layout.addWidget(self.mpl_toolbar)
