@@ -19,11 +19,11 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB0'
+FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
 
@@ -230,13 +230,13 @@ class MainWindow(QMainWindow):
     def get_data(self):
         self.data_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
 
-    # def ros_heading_cb(self, mssg):
-    #     self.df_data.heading = mssg.data
-    #     # rospy.loginfo("Heading %s", mssg.data)
+    def ros_heading_cb(self, mssg):
+        self.df_data.heading = mssg.data
+        # rospy.loginfo("Heading %s", mssg.data)
 
-    # def init_ros_heading_subscriber(self):
-    #     rospy.init_node('compass_data', anonymous=True)
-    #     rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+    def init_ros_heading_subscriber(self):
+        rospy.init_node('compass_data', anonymous=True)
+        rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
 
     def update_radar_plot(self):
 
@@ -281,6 +281,15 @@ class MainWindow(QMainWindow):
         plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
         plot.canvas.draw()
 
+        amplitudes = self.df_data.matrix[:, sector-1]
+        plot = self.plot_matrix[sector-1]
+        plot.canvas.ax.cla()
+        plot.setTitle("{}° Relative".format(((sector-1)*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+        plot.setBackgroundColor('k')
+        plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
+        plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+        plot.canvas.draw()
+
         # for i in range(self.df_data.n_sectors+1):
         #     amplitudes = self.df_data.matrix[:, i]
         #     plot = self.plot_matrix[i]
@@ -313,6 +322,6 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    # main_window.showMaximized()
-    main_window.show()
+    main_window.showMaximized()
+    # main_window.show()
     sys.exit(app.exec_())
