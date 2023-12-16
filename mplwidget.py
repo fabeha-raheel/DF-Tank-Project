@@ -12,14 +12,25 @@ class MplWidget(QWidget):
     def __init__(self, parent = None):
 
         QWidget.__init__(self, parent)
+
+        self.xdata = []
+        self.ydata = []
         
         self.canvas = MplCanvas()
         # self.mpl_toolbar = NavigationToolbar(self.canvas, self)
         
+        self.line = self.canvas.ax.plot(self.xdata, self.ydata, 'y')
+
         vertical_layout = QVBoxLayout()
         # vertical_layout.addWidget(self.mpl_toolbar)
         vertical_layout.addWidget(self.canvas)
         self.setLayout(vertical_layout)
+
+    def refresh_plot(self, xdata, ydata):
+        self.line.set_data(xdata, ydata)
+        self.canvas.ax.relim()
+        self.canvas.ax.autoscale_view()
+        self.canvas.fig.canvas.draw()
         
     def setTitle(self, title, fontsize):
         self.canvas.ax.set_title(title, fontsize=fontsize)
