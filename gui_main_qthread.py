@@ -95,19 +95,6 @@ class MainWindow(QMainWindow):
         self.threadpool.start(self.SpectrumPlotThread)
         self.threadpool.start(self.ScanHistoryThread)
 
-        # start visualization timer
-        # self.live_spectrum_update = QTimer()
-        # self.live_spectrum_update.timeout.connect(self.redraw_spectrum)
-        # self.live_spectrum_update.start(500)
-
-        # self.spectrum_history_update = QTimer()
-        # self.spectrum_history_update.timeout.connect(self.update_scan_history)
-        # self.spectrum_history_update.start(500)
-
-        # self.radar_plot_update = QTimer()
-        # self.radar_plot_update.timeout.connect(self.update_radar_plot)
-        # self.radar_plot_update.start(500)
-
         # start the continuous data acquisition thread
         print("Starting Data Acquisition Thread...")
         self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
@@ -115,8 +102,6 @@ class MainWindow(QMainWindow):
 
     
     def initialize_system(self):
-
-        update_text = ""
 
         print("Connecting to FPGA...")
         self.fpga = Xilinx_Antenna()
@@ -252,7 +237,6 @@ class MainWindow(QMainWindow):
 
     def ros_heading_cb(self, mssg):
         self.df_data.heading = mssg.data
-        # rospy.loginfo("Heading %s", mssg.data)
 
     def init_ros_heading_subscriber(self):
         rospy.init_node('compass_data', anonymous=True)
