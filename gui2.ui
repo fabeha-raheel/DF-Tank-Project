@@ -242,6 +242,9 @@ color: #EEEEEE;
                 <item>
                  <widget class="MplRadar" name="radar_plot" native="true"/>
                 </item>
+                <item>
+                 <widget class="MplWidget" name="plot_0_degrees" native="true"/>
+                </item>
                </layout>
               </item>
               <item row="0" column="2" rowspan="2">
@@ -1027,7 +1030,7 @@ color: #EEEEEE;
   <customwidget>
    <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>mplwidget.h</header>
+   <header location="global">mplwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
