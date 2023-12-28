@@ -18,6 +18,7 @@ from mplradar import *
 from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
+from DF_UGV import *
 
 FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
@@ -66,7 +67,7 @@ class MainWindow(QMainWindow):
 
         self.threadpool = QThreadPool()
 
-        self.init_ros_heading_subscriber()
+        # self.init_ros_heading_subscriber()
 
         self.initialize()
 
@@ -140,6 +141,11 @@ class MainWindow(QMainWindow):
             self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
             self.radar_plot.set_colorbar(self.frequencies)
+
+        print("Initializing UGV...")
+        self.ugv = DF_UGV()
+        self.ugv.initialize_subscribers()
+        self.ugv.initialize_publishers()
 
         print("System Initialization complete!")
 
