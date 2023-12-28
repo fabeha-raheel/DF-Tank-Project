@@ -273,29 +273,29 @@ class MainWindow(QMainWindow):
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
                 
-            # if self.cycle_complete:
-            #     # get updated data
-            #     self.df_data.normalize_matrix()
-            #     updated_data = self.df_data.radar_plot_data()
-            #     freqs = updated_data[0]
-            #     angles = updated_data[1]
-            #     amps = updated_data[2]
+            if self.cycle_complete:
+                # get updated data
+                self.df_data.normalize_matrix()
+                updated_data = self.df_data.radar_plot_data()
+                freqs = updated_data[0]
+                angles = updated_data[1]
+                amps = updated_data[2]
 
-            #     for i in range(len(angles)):
-            #         if angles[i] < 0:
-            #             angles[i] = 360 + angles[i]
+                for i in range(len(angles)):
+                    if angles[i] < 0:
+                        angles[i] = 360 + angles[i]
 
-            #     self.radar_plot.canvas.ax.cla()
-            #     self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
-            #     self.radar_plot.canvas.draw()
+                self.radar_plot.canvas.ax.cla()
+                self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
+                self.radar_plot.canvas.draw()
 
-            #     self.plot_0_degrees.canvas.ax.cla()
-            #     self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
-            #     self.plot_0_degrees.setBackgroundColor('k')
-            #     self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-            #     # self.plot_0.setLimits()
-            #     self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
-            #     self.plot_0_degrees.canvas.draw()
+                self.plot_0_degrees.canvas.ax.cla()
+                self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
+                self.plot_0_degrees.setBackgroundColor('k')
+                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
+                # self.plot_0.setLimits()
+                self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.canvas.draw()
                 
             time.sleep(0.5)
     
