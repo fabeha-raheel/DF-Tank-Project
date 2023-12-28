@@ -11,6 +11,7 @@ import resources
 
 import rospy
 from std_msgs.msg import Float64
+from mavros_msgs.msg import OverrideRCIn
 
 from mplwidget import *
 from mplradar import *
@@ -18,7 +19,6 @@ from mplradar import *
 from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
-from DF_UGV import *
 
 FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
@@ -67,7 +67,26 @@ class MainWindow(QMainWindow):
 
         self.threadpool = QThreadPool()
 
-        # self.init_ros_heading_subscriber()
+        self._throttle_channel = 1
+        self._steering_channel = 0
+        self._forward = False
+        self._backward = False
+        self._right = False
+        self._left = False
+        self._stop = False
+
+        self.init_ros_heading_subscriber()
+        self.init_ros_control_publisher()
+
+        self.forward_button.pressed.connect(self.move_forward)
+        self.forward_button.released.connect(self.stop)
+        self.backward_button.pressed.connect(self.move_backward)
+        self.backward_button.released.connect(self.stop)
+        self.left_button.pressed.connect(self.turn_left)
+        self.left_button.released.connect(self.stop)
+        self.right_button.pressed.connect(self.turn_right)
+        self.right_button.released.connect(self.stop)
+        self.stop_button.clicked.connect(self.stop)
 
         self.initialize()
 
@@ -101,6 +120,8 @@ class MainWindow(QMainWindow):
         self.daq_thread = threading.Thread(target=self.request_data_continuously, daemon=True)
         self.daq_thread.start()
 
+        self.controls_thread = threading.Thread(target=self.monitor_controls, daemon=True)
+        self.controls_thread.start()
     
     def initialize_system(self):
 
@@ -141,11 +162,6 @@ class MainWindow(QMainWindow):
             self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
             self.radar_plot.set_colorbar(self.frequencies)
-
-        print("Initializing UGV...")
-        self.ugv = DF_UGV()
-        self.ugv.initialize_subscribers()
-        self.ugv.initialize_publishers()
 
         print("System Initialization complete!")
 
@@ -245,42 +261,43 @@ class MainWindow(QMainWindow):
         self.df_data.heading = mssg.data
 
     def init_ros_heading_subscriber(self):
-        rospy.init_node('compass_data', anonymous=True)
+        rospy.init_node('df_ugv', anonymous=True)
         rospy.Subscriber('/mavros/global_position/compass_hdg',Float64, self.ros_heading_cb)
+
+    def init_ros_control_publisher(self):
+        self.ugv_rc_override = rospy.Publisher('mavros/rc/override', OverrideRCIn, queue_size=1)
 
     def update_radar_plot(self):
 
         while True:
-            print("Refreshing radar plot")
-
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
                 
-            if self.cycle_complete:
-                # get updated data
-                self.df_data.normalize_matrix()
-                updated_data = self.df_data.radar_plot_data()
-                freqs = updated_data[0]
-                angles = updated_data[1]
-                amps = updated_data[2]
+            # if self.cycle_complete:
+            #     # get updated data
+            #     self.df_data.normalize_matrix()
+            #     updated_data = self.df_data.radar_plot_data()
+            #     freqs = updated_data[0]
+            #     angles = updated_data[1]
+            #     amps = updated_data[2]
 
-                for i in range(len(angles)):
-                    if angles[i] < 0:
-                        angles[i] = 360 + angles[i]
+            #     for i in range(len(angles)):
+            #         if angles[i] < 0:
+            #             angles[i] = 360 + angles[i]
 
-                self.radar_plot.canvas.ax.cla()
-                self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
-                self.radar_plot.canvas.draw()
+            #     self.radar_plot.canvas.ax.cla()
+            #     self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
+            #     self.radar_plot.canvas.draw()
 
-                self.plot_0_degrees.canvas.ax.cla()
-                self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
-                self.plot_0_degrees.setBackgroundColor('k')
-                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-                # self.plot_0.setLimits()
-                self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
-                self.plot_0_degrees.canvas.draw()
+            #     self.plot_0_degrees.canvas.ax.cla()
+            #     self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
+            #     self.plot_0_degrees.setBackgroundColor('k')
+            #     self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
+            #     # self.plot_0.setLimits()
+            #     self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+            #     self.plot_0_degrees.canvas.draw()
                 
-                time.sleep(0.5)
+            time.sleep(0.5)
     
     def redraw_spectrum(self):
         
@@ -325,6 +342,78 @@ class MainWindow(QMainWindow):
             return int(antenna_heading + 360)
         else:
             return int(antenna_heading)
+
+    def move_forward(self):
+        self._forward = True
+        self._backward = False
+        self._left = False
+        self._right = False
+        self._stop = False
+
+    def move_backward(self):
+        self._forward = False
+        self._backward = True
+        self._left = False
+        self._right = False
+        self._stop = False
+
+    def turn_right(self):
+        self._forward = False
+        self._backward = False
+        self._left = False
+        self._right = True
+        self._stop = False
+    
+    def turn_left(self):
+        self._forward = False
+        self._backward = False
+        self._left = True
+        self._right = False
+        self._stop = False
+
+    def stop(self):
+        self._forward = False
+        self._backward = False
+        self._left = False
+        self._right = False
+        self._stop = True
+
+    def monitor_controls(self):
+        while True:
+            if self._forward:
+                msg = OverrideRCIn()
+                msg.channels[self._throttle_channel] = 1650
+                msg.channels[self._steering_channel] = 1500
+                self.ugv_rc_override.publish(msg)
+                time.sleep(0.2)
+
+            elif self._backward:
+                msg = OverrideRCIn()
+                msg.channels[self._throttle_channel] = 1350
+                msg.channels[self._steering_channel] = 1500
+                self.ugv_rc_override.publish(msg)
+                time.sleep(0.2)
+
+            elif self._left:
+                msg = OverrideRCIn()
+                msg.channels[self._throttle_channel] = 1500
+                msg.channels[self._steering_channel] = 1350
+                self.ugv_rc_override.publish(msg)
+                time.sleep(0.2)
+
+            elif self._right:
+                msg = OverrideRCIn()
+                msg.channels[self._throttle_channel] = 1500
+                msg.channels[self._steering_channel] = 1650
+                self.ugv_rc_override.publish(msg)
+                time.sleep(0.2)
+
+            elif self._stop:
+                msg = OverrideRCIn()
+                msg.channels[self._throttle_channel] = 1500
+                msg.channels[self._steering_channel] = 1500
+                self.ugv_rc_override.publish(msg)
+                time.sleep(0.2)
 
 
 if __name__ == '__main__':
