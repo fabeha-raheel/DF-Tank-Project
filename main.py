@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         self.df_data = DF_Data()
 
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
+        self.pan_sequence = [90, 67.5, 45, 22.5, 0, 337.5, 315, 292.5, 270, 292.5, 315, 337.5, 0, 22.5, 45, 67.5]
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -180,89 +181,102 @@ class MainWindow(QMainWindow):
     def request_data_continuously(self):
         
         while self.run_threads:
-            if self.fpga.is_connected() and self.pantilt.is_connected():
 
-                self.pantilt.set_pan_position(90)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 90
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            for pan in self.pan_sequence:
+                if self.fpga.is_connected() and self.pantilt.is_connected():
+                    self.pantilt.set_pan_position(pan)
+                    self.df_data.amplitudes = self.fpga.read_data()
+                    if pan < 180:
+                        self.df_data.angle_pt = pan
+                    else:
+                        self.df_data.angle_pt = pan - 360
+                    self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                    if not self.run_threads:
+                        break
 
-                self.pantilt.set_pan_position(67.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            # if self.fpga.is_connected() and self.pantilt.is_connected():
 
-                self.pantilt.set_pan_position(45)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(90)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 90
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(22.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(67.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 67.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(0)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 0
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(45)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 45
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(337.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(22.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 22.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(315)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(0)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 0
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(292.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(337.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -22.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(270)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -90
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(315)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -45
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.cycle_complete = True
+            #     self.pantilt.set_pan_position(292.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -67.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(292.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(270)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -90
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(315)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.cycle_complete = True
 
-                self.pantilt.set_pan_position(337.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(292.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -67.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(0)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 0
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(315)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -45
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(22.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(337.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = -22.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(45)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(0)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 0
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
-                self.pantilt.set_pan_position(67.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            #     self.pantilt.set_pan_position(22.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 22.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+
+            #     self.pantilt.set_pan_position(45)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 45
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+
+            #     self.pantilt.set_pan_position(67.5)
+            #     self.df_data.amplitudes = self.fpga.read_data()
+            #     self.df_data.angle_pt = 67.5
+            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
 
     def ros_heading_cb(self, mssg):
         self.df_data.heading = mssg.data
