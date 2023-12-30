@@ -12,6 +12,7 @@ import resources
 import rospy
 from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
+from mavros_msgs.srv import CommandBool
 
 from mplwidget import *
 from mplradar import *
@@ -66,6 +67,7 @@ class MainWindow(QMainWindow):
         self.cycle_complete = True
 
         self.threadpool = QThreadPool()
+        self.run_threads = True
 
         self._throttle_channel = 1
         self._steering_channel = 0
@@ -77,6 +79,7 @@ class MainWindow(QMainWindow):
 
         self.init_ros_heading_subscriber()
         self.init_ros_control_publisher()
+        self.arm_ugv()
 
         self.forward_button.pressed.connect(self.move_forward)
         self.forward_button.released.connect(self.stop)
@@ -90,6 +93,9 @@ class MainWindow(QMainWindow):
 
         self.initialize()
 
+    def closeEvent(self, event):
+        self.run_threads = False
+    
     def show_page(self, page_name):
         target_page=self.stackedWidget.findChild(QWidget, page_name)
         self.stackedWidget.setCurrentWidget(target_page)
@@ -105,7 +111,7 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(1)
+        self.TabWidget.setCurrentIndex(0)
 
         self.RadarPlotThread = Worker(self.update_radar_plot)
         self.SpectrumPlotThread = Worker(self.redraw_spectrum)
@@ -172,7 +178,8 @@ class MainWindow(QMainWindow):
         self.gui_init_thread.start()
 
     def request_data_continuously(self):
-        while True:
+        
+        while self.run_threads:
             if self.fpga.is_connected() and self.pantilt.is_connected():
 
                 self.pantilt.set_pan_position(90)
@@ -267,9 +274,18 @@ class MainWindow(QMainWindow):
     def init_ros_control_publisher(self):
         self.ugv_rc_override = rospy.Publisher('mavros/rc/override', OverrideRCIn, queue_size=1)
 
+    def arm_ugv(self):
+        rospy.wait_for_service('/mavros/cmd/arming')
+        try:
+            armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
+            armResponse = armService(True)
+            rospy.loginfo(armResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
     def update_radar_plot(self):
 
-        while True:
+        while self.run_threads:
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
                 
@@ -301,7 +317,7 @@ class MainWindow(QMainWindow):
     
     def redraw_spectrum(self):
         
-        while True:
+        while self.run_threads:
             self.plot_0.canvas.ax.cla()
             self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
             self.plot_0.setBackgroundColor('k')
@@ -314,7 +330,7 @@ class MainWindow(QMainWindow):
 
     def update_scan_history(self):
 
-        while True:
+        while self.run_threads:
             for i in range(self.df_data.n_sectors+1):
                 amplitudes = self.df_data.matrix[:, i]
                 plot = self.plot_matrix[i]
@@ -379,7 +395,7 @@ class MainWindow(QMainWindow):
         self._stop = True
 
     def monitor_controls(self):
-        while True:
+        while self.run_threads:
             if self._forward:
                 msg = OverrideRCIn()
                 msg.channels[self._throttle_channel] = 1650
@@ -420,6 +436,6 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    # main_window.showMaximized()
-    main_window.show()
+    main_window.showMaximized()
+    # main_window.show()
     sys.exit(app.exec_())
