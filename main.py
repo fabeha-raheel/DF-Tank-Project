@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        uic.loadUi('gui3.ui', self)  # Load the UI file
+        uic.loadUi('gui.ui', self)  # Load the UI file
         self.setWindowTitle("DF Tank - Graphical Interface")
 
         self.df_data = DF_Data()
