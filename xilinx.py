@@ -128,7 +128,7 @@ class Xilinx_Antenna:
                     
 if __name__ == "__main__":
 
-    FPGA_PORT = '/dev/ttyUSB0'      # port for Linux / Ubuntu
+    FPGA_PORT = '/dev/ttyUSB1'      # port for Linux / Ubuntu
     FPGA_BAUD = 115200
 
     print("Connecting to FPGA...")

@@ -252,9 +252,15 @@ color: #EEEEEE;
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
-                  <width>400</width>
+                  <width>600</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -387,45 +393,21 @@ color: #EEEEEE;
                   </spacer>
                  </item>
                  <item>
-                  <spacer name="verticalSpacer_8">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
                   <layout class="QGridLayout" name="gridLayout_4">
-                   <item row="1" column="1" colspan="3">
-                    <widget class="QPushButton" name="pushButton_3">
-                     <property name="minimumSize">
+                   <item row="4" column="1">
+                    <spacer name="verticalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
                       <size>
-                       <width>80</width>
+                       <width>20</width>
                        <height>40</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>9</pointsize>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton{
-	background-color: #D9D9D9;
-	border-radius: 15px;
-}</string>
-                     </property>
-                     <property name="text">
-                      <string>Arm/Disarm</string>
-                     </property>
-                    </widget>
+                    </spacer>
                    </item>
-                   <item row="2" column="1" colspan="3">
+                   <item row="2" column="1">
                     <widget class="QPushButton" name="pushButton">
                      <property name="minimumSize">
                       <size>
@@ -449,7 +431,47 @@ color: #EEEEEE;
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1" colspan="3">
+                   <item row="0" column="1">
+                    <widget class="MplWidget" name="plot_0_degrees" native="true">
+                     <property name="minimumSize">
+                      <size>
+                       <width>300</width>
+                       <height>200</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>600</width>
+                       <height>400</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QPushButton" name="pushButton_3">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <pointsize>9</pointsize>
+                      </font>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{
+	background-color: #D9D9D9;
+	border-radius: 15px;
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Arm/Disarm</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
                     <widget class="QPushButton" name="pushButton_2">
                      <property name="minimumSize">
                       <size>
@@ -472,22 +494,6 @@ color: #EEEEEE;
                       <string>Manual</string>
                      </property>
                     </widget>
-                   </item>
-                   <item row="4" column="2">
-                    <spacer name="verticalSpacer_5">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="MplWidget" name="plot_0_degrees" native="true"/>
                    </item>
                   </layout>
                  </item>
