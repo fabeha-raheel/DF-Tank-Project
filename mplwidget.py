@@ -45,6 +45,11 @@ class MplWidget(QWidget):
 
     def setBackgroundColor(self, color):
         self.canvas.ax.set_facecolor(color)
+
+    def setTickcolor(self, color):
+        self.canvas.ax.tick_params(colors=color, which='both')  # 'both' refers to minor and major axes
+        self.canvas.ax.xaxis.label.set_color(color)
+        self.canvas.ax.yaxis.label.set_color(color)
         
         
 class MplCanvas(FigureCanvas):

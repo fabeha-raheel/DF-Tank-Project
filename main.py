@@ -241,6 +241,7 @@ class MainWindow(QMainWindow):
 
                 self.plot_0_degrees.canvas.ax.cla()
                 self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
                 self.plot_0_degrees.canvas.draw()
                 
             time.sleep(0.5)
@@ -250,9 +251,7 @@ class MainWindow(QMainWindow):
         while self.run_threads:
             self.plot_0.canvas.ax.cla()
             self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
-            self.plot_0.setBackgroundColor('k')
             self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-            # self.plot_0.setLimits()
             self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
             self.plot_0.canvas.draw()
 
@@ -266,7 +265,6 @@ class MainWindow(QMainWindow):
                 plot = self.plot_matrix[i]
                 plot.canvas.ax.cla()
                 plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-                plot.setBackgroundColor('k')
                 plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
                 plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
                 plot.canvas.draw()
@@ -276,7 +274,13 @@ class MainWindow(QMainWindow):
     def initialize_plots(self):
         self.plot_0_degrees.setBackgroundColor('k')
         self.plot_0_degrees.canvasBackgroundColor('#53847F')
-        self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
+        self.plot_0_degrees.setTickcolor('#D9D9D9')
+        
+        self.plot_0.setBackgroundColor('k')
+
+        for plot in self.plot_matrix:
+            plot.setBackgroundColor('k')
+
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
