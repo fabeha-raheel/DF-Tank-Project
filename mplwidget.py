@@ -40,8 +40,16 @@ class MplWidget(QWidget):
     def setLimits(self, min, max):
         self.canvas.ax.set_ylim(min, max)
 
+    def canvasBackgroundColor(self, color):
+        self.canvas.fig.set_facecolor(color)
+
     def setBackgroundColor(self, color):
         self.canvas.ax.set_facecolor(color)
+
+    def setTickcolor(self, color):
+        self.canvas.ax.tick_params(colors=color, which='both')  # 'both' refers to minor and major axes
+        self.canvas.ax.xaxis.label.set_color(color)
+        self.canvas.ax.yaxis.label.set_color(color)
         
         
 class MplCanvas(FigureCanvas):

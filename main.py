@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys
 import numpy as np
 import threading
@@ -12,6 +14,7 @@ import resources
 import rospy
 from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
+from mavros_msgs.srv import CommandBool
 
 from mplwidget import *
 from mplradar import *
@@ -48,12 +51,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        uic.loadUi('gui3.ui', self)  # Load the UI file
+        uic.loadUi('gui.ui', self)  # Load the UI file
         self.setWindowTitle("DF Tank - Graphical Interface")
 
         self.df_data = DF_Data()
 
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
+        self.pan_sequence = [90, 67.5, 45, 22.5, 0, 337.5, 315, 292.5, 270, 292.5, 315, 337.5, 0, 22.5, 45, 67.5]
 
         self.show_page('splash_screen')
         self.timer = QTimer()
@@ -66,6 +70,7 @@ class MainWindow(QMainWindow):
         self.cycle_complete = True
 
         self.threadpool = QThreadPool()
+        self.run_threads = True
 
         self._throttle_channel = 1
         self._steering_channel = 0
@@ -77,6 +82,7 @@ class MainWindow(QMainWindow):
 
         self.init_ros_heading_subscriber()
         self.init_ros_control_publisher()
+        self.arm_ugv()
 
         self.forward_button.pressed.connect(self.move_forward)
         self.forward_button.released.connect(self.stop)
@@ -90,6 +96,9 @@ class MainWindow(QMainWindow):
 
         self.initialize()
 
+    def closeEvent(self, event):
+        self.run_threads = False
+    
     def show_page(self, page_name):
         target_page=self.stackedWidget.findChild(QWidget, page_name)
         self.stackedWidget.setCurrentWidget(target_page)
@@ -105,11 +114,13 @@ class MainWindow(QMainWindow):
         # show the visualization page
         self.show_page('visualization_page')
         # show the live spectrum by default
-        self.TabWidget.setCurrentIndex(1)
+        self.TabWidget.setCurrentIndex(0)
 
         self.RadarPlotThread = Worker(self.update_radar_plot)
         self.SpectrumPlotThread = Worker(self.redraw_spectrum)
         self.ScanHistoryThread = Worker(self.update_scan_history)
+
+        self.initialize_plots()
         
         self.threadpool.start(self.RadarPlotThread)
         self.threadpool.start(self.SpectrumPlotThread)
@@ -172,90 +183,20 @@ class MainWindow(QMainWindow):
         self.gui_init_thread.start()
 
     def request_data_continuously(self):
-        while True:
-            if self.fpga.is_connected() and self.pantilt.is_connected():
+        
+        while self.run_threads:
 
-                self.pantilt.set_pan_position(90)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 90
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(67.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(45)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(22.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(0)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 0
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(337.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(315)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(292.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(270)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -90
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.cycle_complete = True
-
-                self.pantilt.set_pan_position(292.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(315)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(337.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = -22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(0)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 0
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(22.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 22.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(45)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 45
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-                self.pantilt.set_pan_position(67.5)
-                self.df_data.amplitudes = self.fpga.read_data()
-                self.df_data.angle_pt = 67.5
-                self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+            for pan in self.pan_sequence:
+                if self.fpga.is_connected() and self.pantilt.is_connected():
+                    self.pantilt.set_pan_position(pan)
+                    self.df_data.amplitudes = self.fpga.read_data()
+                    if pan < 180:
+                        self.df_data.angle_pt = pan
+                    else:
+                        self.df_data.angle_pt = pan - 360
+                    self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                    if not self.run_threads:
+                        break
 
     def ros_heading_cb(self, mssg):
         self.df_data.heading = mssg.data
@@ -267,9 +208,18 @@ class MainWindow(QMainWindow):
     def init_ros_control_publisher(self):
         self.ugv_rc_override = rospy.Publisher('mavros/rc/override', OverrideRCIn, queue_size=1)
 
+    def arm_ugv(self):
+        rospy.wait_for_service('/mavros/cmd/arming')
+        try:
+            armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
+            armResponse = armService(True)
+            rospy.loginfo(armResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
     def update_radar_plot(self):
 
-        while True:
+        while self.run_threads:
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
                 
@@ -290,23 +240,18 @@ class MainWindow(QMainWindow):
                 self.radar_plot.canvas.draw()
 
                 self.plot_0_degrees.canvas.ax.cla()
-                self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
-                self.plot_0_degrees.setBackgroundColor('k')
-                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-                # self.plot_0.setLimits()
                 self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
                 self.plot_0_degrees.canvas.draw()
                 
             time.sleep(0.5)
     
     def redraw_spectrum(self):
         
-        while True:
+        while self.run_threads:
             self.plot_0.canvas.ax.cla()
             self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
-            self.plot_0.setBackgroundColor('k')
             self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-            # self.plot_0.setLimits()
             self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
             self.plot_0.canvas.draw()
 
@@ -314,18 +259,28 @@ class MainWindow(QMainWindow):
 
     def update_scan_history(self):
 
-        while True:
+        while self.run_threads:
             for i in range(self.df_data.n_sectors+1):
                 amplitudes = self.df_data.matrix[:, i]
                 plot = self.plot_matrix[i]
                 plot.canvas.ax.cla()
                 plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-                plot.setBackgroundColor('k')
                 plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
                 plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
                 plot.canvas.draw()
 
                 time.sleep(0.5)
+
+    def initialize_plots(self):
+        self.plot_0_degrees.setBackgroundColor('k')
+        self.plot_0_degrees.canvasBackgroundColor('#53847F')
+        self.plot_0_degrees.setTickcolor('#D9D9D9')
+        
+        self.plot_0.setBackgroundColor('k')
+
+        for plot in self.plot_matrix:
+            plot.setBackgroundColor('k')
+
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
@@ -379,7 +334,7 @@ class MainWindow(QMainWindow):
         self._stop = True
 
     def monitor_controls(self):
-        while True:
+        while self.run_threads:
             if self._forward:
                 msg = OverrideRCIn()
                 msg.channels[self._throttle_channel] = 1650
@@ -420,6 +375,6 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    # main_window.showMaximized()
-    main_window.show()
+    main_window.showMaximized()
+    # main_window.show()
     sys.exit(app.exec_())
