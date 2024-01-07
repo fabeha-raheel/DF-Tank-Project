@@ -23,7 +23,7 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB1'
+FPGA_PORT = '/dev/ttyUSB2'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
 
         self.init_ros_heading_subscriber()
         self.init_ros_control_publisher()
-        self.arm_ugv()
+        self.disarm_ugv()
 
         self.forward_button.pressed.connect(self.move_forward)
         self.forward_button.released.connect(self.stop)
@@ -93,6 +93,9 @@ class MainWindow(QMainWindow):
         self.right_button.pressed.connect(self.turn_right)
         self.right_button.released.connect(self.stop)
         self.stop_button.clicked.connect(self.stop)
+
+        self.arm_button.setChecked(False)
+        self.arm_button.clicked.connect(self.arm_disarm_ugv)
 
         self.initialize()
 
@@ -216,6 +219,22 @@ class MainWindow(QMainWindow):
             rospy.loginfo(armResponse)
         except rospy.ServiceException as e:
             print("Service call failed: %s" %e)
+
+    def disarm_ugv(self):
+        rospy.wait_for_service('/mavros/cmd/arming')
+        try:
+            armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
+            armResponse = armService(False)
+            rospy.loginfo(armResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
+    def arm_disarm_ugv(self):
+
+        if self.arm_button.isChecked():
+            self.arm_ugv()
+        else:
+            self.disarm_ugv()
 
     def update_radar_plot(self):
 
