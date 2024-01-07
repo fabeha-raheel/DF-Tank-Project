@@ -5,4 +5,10 @@ https://doc.qt.io/qtforpython-6/PySide6/QtCharts/QValueAxis.html
 https://www.pythonguis.com/pyqt5/
 
 
+Port Permissions - Linux
+sudo usermod -a -G dialout $USER
+sudo reboot
+
+
+
 
