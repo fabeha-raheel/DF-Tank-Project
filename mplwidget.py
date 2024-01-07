@@ -40,6 +40,9 @@ class MplWidget(QWidget):
     def setLimits(self, min, max):
         self.canvas.ax.set_ylim(min, max)
 
+    def canvasBackgroundColor(self, color):
+        self.canvas.fig.set_facecolor(color)
+
     def setBackgroundColor(self, color):
         self.canvas.ax.set_facecolor(color)
         

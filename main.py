@@ -119,6 +119,8 @@ class MainWindow(QMainWindow):
         self.RadarPlotThread = Worker(self.update_radar_plot)
         self.SpectrumPlotThread = Worker(self.redraw_spectrum)
         self.ScanHistoryThread = Worker(self.update_scan_history)
+
+        self.initialize_plots()
         
         self.threadpool.start(self.RadarPlotThread)
         self.threadpool.start(self.SpectrumPlotThread)
@@ -196,90 +198,6 @@ class MainWindow(QMainWindow):
                     if not self.run_threads:
                         break
 
-            # if self.fpga.is_connected() and self.pantilt.is_connected():
-
-            #     self.pantilt.set_pan_position(90)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 90
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(67.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 67.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(45)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 45
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(22.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 22.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(0)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 0
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(337.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -22.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(315)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -45
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(292.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -67.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(270)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -90
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.cycle_complete = True
-
-            #     self.pantilt.set_pan_position(292.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -67.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(315)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -45
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(337.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = -22.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(0)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 0
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(22.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 22.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(45)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 45
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
-            #     self.pantilt.set_pan_position(67.5)
-            #     self.df_data.amplitudes = self.fpga.read_data()
-            #     self.df_data.angle_pt = 67.5
-            #     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
-
     def ros_heading_cb(self, mssg):
         self.df_data.heading = mssg.data
 
@@ -322,10 +240,6 @@ class MainWindow(QMainWindow):
                 self.radar_plot.canvas.draw()
 
                 self.plot_0_degrees.canvas.ax.cla()
-                self.plot_0_degrees.setTitle("0° Relative", fontsize=10)
-                self.plot_0_degrees.setBackgroundColor('k')
-                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-                # self.plot_0.setLimits()
                 self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
                 self.plot_0_degrees.canvas.draw()
                 
@@ -358,6 +272,11 @@ class MainWindow(QMainWindow):
                 plot.canvas.draw()
 
                 time.sleep(0.5)
+
+    def initialize_plots(self):
+        self.plot_0_degrees.setBackgroundColor('k')
+        self.plot_0_degrees.canvasBackgroundColor('#53847F')
+        self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
