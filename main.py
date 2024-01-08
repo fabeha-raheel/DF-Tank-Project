@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
         self.arm_button.setChecked(False)
         self.arm_button.clicked.connect(self.arm_disarm_ugv)
         self.manual_button.clicked.connect(self.ugv_mode)
+
         self.initialize()
 
     def closeEvent(self, event):
@@ -244,6 +245,7 @@ class MainWindow(QMainWindow):
     def ugv_mode(self):
         if self.manual_button.isChecked():
             self.set_mode_ugv()
+            
     def arm_disarm_ugv(self):
 
         if self.arm_button.isChecked():
