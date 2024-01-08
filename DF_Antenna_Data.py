@@ -106,7 +106,6 @@ class DF_Data():
     def current_sector(self):
         return int((self._angle_pt - self._alpha1)/self._beam_width)
 
-    @property
     def normalized_amplitudes(self):
         return [(1-(float(i)-min(self._amplitudes))/(max(self._amplitudes)-min(self._amplitudes))) for i in self._amplitudes]
     
@@ -211,8 +210,11 @@ class Antenna_Static():
         self._bandwidth = value
 
 if __name__ == '__main__':
-    static_data = Antenna_Static()
-    print(static_data.__dict__)
+    # static_data = Antenna_Static()
+    # print(static_data.__dict__)
 
-    dynamic_data = Antenna_Dyanmaic()
-    print(dynamic_data.__dict__)
+    # dynamic_data = Antenna_Dyanmaic()
+    # print(dynamic_data.__dict__)
+
+    antenna = DF_Data()
+    print(antenna.__dict__)
