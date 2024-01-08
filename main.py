@@ -14,7 +14,7 @@ import resources
 import rospy
 from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
-from mavros_msgs.srv import CommandBool
+from mavros_msgs.srv import CommandBool, SetMode, SetModeRequest
 
 from mplwidget import *
 from mplradar import *
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
 
         self.init_ros_heading_subscriber()
         self.init_ros_control_publisher()
-        self.arm_ugv()
+        self.disarm_ugv()
 
         self.forward_button.pressed.connect(self.move_forward)
         self.forward_button.released.connect(self.stop)
@@ -93,6 +93,10 @@ class MainWindow(QMainWindow):
         self.right_button.pressed.connect(self.turn_right)
         self.right_button.released.connect(self.stop)
         self.stop_button.clicked.connect(self.stop)
+
+        self.arm_button.setChecked(False)
+        self.arm_button.clicked.connect(self.arm_disarm_ugv)
+        self.manual_button.clicked.connect(self.ugv_mode)
 
         self.initialize()
 
@@ -166,6 +170,8 @@ class MainWindow(QMainWindow):
 
             self.frequencies = list(self.frequencies_range_Mhz)
 
+            self.avg_freqs = self.df_data.averaging(array=self.frequencies, N=10)
+
             self.df_data.angle_pt = 0
 
             self.df_data.initialize_matrix()
@@ -217,6 +223,38 @@ class MainWindow(QMainWindow):
         except rospy.ServiceException as e:
             print("Service call failed: %s" %e)
 
+    def disarm_ugv(self):
+        rospy.wait_for_service('/mavros/cmd/arming')
+        try:
+            armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
+            armResponse = armService(False)
+            rospy.loginfo(armResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
+    def set_mode_ugv(self):
+        rospy.wait_for_service('/mavros/set_mode', timeout=3)
+        try:
+            data = SetModeRequest()
+            data.custom_mode = 'MANUAL'
+            modeService = rospy.ServiceProxy('/mavros/set_mode', SetMode)
+            # modeService.__data(data)
+            modeResponse = modeService(data)
+            rospy.loginfo(modeResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
+    def ugv_mode(self):
+        if self.manual_button.isChecked():
+            self.set_mode_ugv()
+            
+    def arm_disarm_ugv(self):
+
+        if self.arm_button.isChecked():
+            self.arm_ugv()
+        else:
+            self.disarm_ugv()
+
     def update_radar_plot(self):
 
         while self.run_threads:
@@ -240,7 +278,8 @@ class MainWindow(QMainWindow):
                 self.radar_plot.canvas.draw()
 
                 self.plot_0_degrees.canvas.ax.cla()
-                self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
                 self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
                 self.plot_0_degrees.canvas.draw()
                 
@@ -249,10 +288,13 @@ class MainWindow(QMainWindow):
     def redraw_spectrum(self):
         
         while self.run_threads:
+            avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
+            
             self.plot_0.canvas.ax.cla()
             self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
             self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-            self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
+            # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
+            self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
             self.plot_0.canvas.draw()
 
             time.sleep(0.5)
@@ -262,11 +304,14 @@ class MainWindow(QMainWindow):
         while self.run_threads:
             for i in range(self.df_data.n_sectors+1):
                 amplitudes = self.df_data.matrix[:, i]
+                avg_amplitudes = self.df_data.averaging(array=amplitudes, N=10)
+
                 plot = self.plot_matrix[i]
                 plot.canvas.ax.cla()
                 plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
                 plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
-                plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+                # plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+                plot.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
                 plot.canvas.draw()
 
                 time.sleep(0.5)

@@ -133,6 +133,16 @@ class DF_Data():
                     significant_angles.append((c*self.beam_width)+self.alpha1)
 
         return (significant_frequencies, significant_angles, significant_amplitudes)
+    
+    def averaging(self, array, N=10):
+        
+        self.amplitudes_averaged = []
+
+        for i in range(int(len(array)/N)):
+            average = sum(array[i*N : (i+1)*N]) / N
+            self.amplitudes_averaged.append(average)
+
+        return self.amplitudes_averaged
 
 class Antenna_Dyanmaic():
     def __init__(self) -> None:
