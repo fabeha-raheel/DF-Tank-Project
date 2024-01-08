@@ -52,6 +52,10 @@ class DF_System():
         self._left = False
         self._stop = False
 
+        self.ws_url = "ws://localhost:8000/"
+
+    def initialize(self):
+
         if self.test:
             self.dummy_thread = threading.Thread(target=self.request_dummy_data_continuously, daemon=True)
             self.dummy_thread.start()
@@ -90,6 +94,7 @@ class DF_System():
         while True:
             print("Sending data....")
             data = {
+                "type": 'data',
                 "f1": self.df_data.f1,
                 "f2": self.df_data.f2,
                 "n_samples": self.df_data.n_samples,
@@ -110,7 +115,7 @@ class DF_System():
     
     def initialize_ws_client(self):
         
-        self.ws = websocket.WebSocketApp(websocket_url,
+        self.ws = websocket.WebSocketApp(self.ws_url,
                                 on_message=self.on_message,
                                 on_error=self.on_error,
                                 on_close=self.on_close)
