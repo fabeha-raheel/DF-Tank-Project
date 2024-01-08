@@ -3,26 +3,40 @@ import json
 import websockets
 import pickle
 
-def write_to_log(data):
-
-    f = open('/home/ugv/DF-Tank-Project/log.pickle', 'wb')
-    pickle.dump(data, f)
-    f.close()
+# Store connected clients in a set
+connected_clients = set()
 
 async def handle_client(websocket, path):
     print(f"Client connected from {websocket.remote_address}")
+
+    # Add the new client to the set of connected clients
+    connected_clients.add(websocket)
 
     try:
         while True:
             # Wait for messages from the client
             message = await websocket.recv()
             data = json.loads(message)
-            # print(f"Received message: {message}")
             print(data)
-            # write_to_log(data)
+
+            # Broadcast the received message to all other connected clients
+            await broadcast(message, sender=websocket)
 
     except websockets.exceptions.ConnectionClosed:
         print(f"Connection closed by client {websocket.remote_address}")
+
+        # Remove the disconnected client from the set
+        connected_clients.remove(websocket)
+
+async def broadcast(message, sender):
+    # Broadcast the message to all other connected clients
+    for client in connected_clients:
+        if client != sender:
+            try:
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                # Remove the disconnected client from the set
+                connected_clients.remove(client)
 
 if __name__ == "__main__":
     # Replace the host and port with your desired values
