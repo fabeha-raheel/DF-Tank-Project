@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import threading
 import random
-import websocket
+import websocket #pip3 install websocket-client
 import json
 
 import rospy
@@ -19,6 +19,8 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
+TEST = False
+
 FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
 
@@ -26,7 +28,8 @@ FPGA_BAUD = 115200
 PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
-websocket_url = "ws://localhost:8000/"
+# websocket_url = "ws://localhost:8000/"
+websocket_url = "ws://192.168.0.116:8000/"
 sensor_id = "sensor_001"
 
 class DF_System():
@@ -53,8 +56,6 @@ class DF_System():
             self.dummy_thread = threading.Thread(target=self.request_dummy_data_continuously, daemon=True)
             self.dummy_thread.start()
 
-            self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
-            self.ws_thread.start()
         else:
             rospy.init_node('df_ugv', anonymous=True)
             self.init_ros_heading_subscriber()
@@ -70,6 +71,9 @@ class DF_System():
 
             self.controls_thread = threading.Thread(target=self.monitor_controls, daemon=True)
             self.controls_thread.start()
+        
+        self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
+        self.ws_thread.start()
 
     def on_message(self, ws, message):
         print(f"Received message: {message}")
@@ -85,12 +89,7 @@ class DF_System():
     
         while True:
             print("Sending data....")
-            # sensor_data = {
-            #     "sensor_id": sensor_id,
-            #     "timestamp": int(time.time()),
-            #     "value": random.uniform(0, 100)
-            # }
-            sensor_data = {
+            data = {
                 "f1": self.df_data.f1,
                 "f2": self.df_data.f2,
                 "n_samples": self.df_data.n_samples,
@@ -101,7 +100,7 @@ class DF_System():
             }
 
             # Convert sensor data to JSON
-            json_data = json.dumps(sensor_data)
+            json_data = json.dumps(data)
 
             # Send the sensor data over the WebSocket connection
             ws.send(json_data)
@@ -345,6 +344,6 @@ class DF_System():
 
 if __name__ == '__main__':
 
-    df_system = DF_System(test=True)
+    df_system = DF_System(test=TEST)
     while True:
         time.sleep(1)
