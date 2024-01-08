@@ -14,7 +14,7 @@ import resources
 import rospy
 from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
-from mavros_msgs.srv import CommandBool
+from mavros_msgs.srv import CommandBool, SetMode, SetModeRequest
 
 from mplwidget import *
 from mplradar import *
@@ -23,7 +23,7 @@ from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
 
-FPGA_PORT = '/dev/ttyUSB2'
+FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
         self.arm_button.setChecked(False)
         self.arm_button.clicked.connect(self.arm_disarm_ugv)
-
+        self.manual_button.clicked.connect(self.ugv_mode)
         self.initialize()
 
     def closeEvent(self, event):
@@ -229,6 +229,21 @@ class MainWindow(QMainWindow):
         except rospy.ServiceException as e:
             print("Service call failed: %s" %e)
 
+    def set_mode_ugv(self):
+        rospy.wait_for_service('/mavros/set_mode', timeout=3)
+        try:
+            data = SetModeRequest()
+            data.custom_mode = 'MANUAL'
+            modeService = rospy.ServiceProxy('/mavros/set_mode', SetMode)
+            # modeService.__data(data)
+            modeResponse = modeService(data)
+            rospy.loginfo(modeResponse)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" %e)
+
+    def ugv_mode(self):
+        if self.manual_button.isChecked():
+            self.set_mode_ugv()
     def arm_disarm_ugv(self):
 
         if self.arm_button.isChecked():

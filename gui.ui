@@ -494,13 +494,22 @@ QPushButton:checked{
                       </font>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">QPushButton{
+                      <string notr="true">QPushButton:!checked{
 	background-color: #D9D9D9;
 	border-radius: 15px;
+}
+QPushButton:checked{
+	background-color: rgb(136, 138, 133);
+	border-radius: 15px;
+	border-style: outset;
+	
 }</string>
                      </property>
                      <property name="text">
                       <string>Manual</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
