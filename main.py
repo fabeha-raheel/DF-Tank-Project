@@ -238,7 +238,6 @@ class MainWindow(QMainWindow):
             data = SetModeRequest()
             data.custom_mode = 'MANUAL'
             modeService = rospy.ServiceProxy('/mavros/set_mode', SetMode)
-            # modeService.__data(data)
             modeResponse = modeService(data)
             rospy.loginfo(modeResponse)
         except rospy.ServiceException as e:
@@ -263,7 +262,8 @@ class MainWindow(QMainWindow):
                 
             if self.cycle_complete:
                 # get updated data
-                self.df_data.normalize_matrix()
+                # self.df_data.normalize_matrix()
+                self.df_data.normalize_matrix_byCol()
                 updated_data = self.df_data.radar_plot_data()
                 freqs = updated_data[0]
                 angles = updated_data[1]

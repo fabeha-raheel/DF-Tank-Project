@@ -118,6 +118,12 @@ class DF_Data():
         self.lp_matrix = 1 - self.lp_matrix
         self.lp_matrix = np.round(self.lp_matrix, 4)
 
+    def normalize_matrix_byCol(self):
+        # self.lp_matrix = (self.matrix - self.matrix.min(axis=0)) / (self.matrix.max(axis=0) - self.matrix.min(axis=0))
+        self.lp_matrix = self.matrix / self.matrix.max(axis=0)
+        self.lp_matrix = 1 - self.lp_matrix
+        self.lp_matrix = np.round(self.lp_matrix, 4)
+
     def radar_plot_data(self):
         rows, cols = self.lp_matrix.shape
 
