@@ -12,9 +12,6 @@ from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import CommandBool, SetMode, SetModeRequest
 
-from mplwidget import *
-from mplradar import *
-
 from xilinx import *
 from DF_Antenna_Data import *
 from PTZ_Controller import *
