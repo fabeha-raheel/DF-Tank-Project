@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import asyncio
 import json
 import websockets
@@ -40,9 +42,9 @@ async def broadcast(message, sender):
 
 if __name__ == "__main__":
     # Replace the host and port with your desired values
-    server_host = "localhost"
-    # server_host = "0.0.0.0"
-    server_port = 8000
+    # server_host = "localhost"
+    server_host = "0.0.0.0"
+    server_port = 9090
 
     server = websockets.serve(handle_client, server_host, server_port)
 
