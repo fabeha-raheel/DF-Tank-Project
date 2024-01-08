@@ -84,7 +84,6 @@ class DF_System():
         print("WebSocket connection opened")
     
         while True:
-            # Simulate sensor data (replace this with actual sensor data)
             print("Sending data....")
             # sensor_data = {
             #     "sensor_id": sensor_id,
@@ -100,10 +99,6 @@ class DF_System():
                 "angle_pt": self.df_data.angle_pt,
                 "heading": self.df_data.heading
             }
-            # sensor_data = self.df_data.__dict__
-            # sensor_data.pop('amplitudes_averaged', None)
-            # sensor_data.pop('matrix')
-            # print(sensor_data)
 
             # Convert sensor data to JSON
             json_data = json.dumps(sensor_data)
