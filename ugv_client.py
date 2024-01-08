@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from DF_System import *
 
 # websocket_url = "ws://192.168.0.116:8000/"
