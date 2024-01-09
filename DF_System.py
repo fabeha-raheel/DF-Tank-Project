@@ -76,6 +76,19 @@ class DF_System():
         
         self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
         self.ws_thread.start()
+    
+    def initialize_ws_client(self):
+        
+        self.ws = websocket.WebSocketApp(self.ws_url,
+                                on_message=self.on_message,
+                                on_error=self.on_error,
+                                on_close=self.on_close)
+        
+        # Set the on_open callback to handle the opening of the connection
+        self.ws.on_open = self.on_open
+
+        # Start the WebSocket connection (this will run the on_open callback)
+        self.ws.run_forever(ping_interval=13, ping_timeout=10)
 
     def on_message(self, ws, message):
         print(f"Received message: {message}")
@@ -91,22 +104,16 @@ class DF_System():
         time.sleep(self.ws_timer)
         self.handle_websocket_closing()
 
-    def on_open(self, ws):
-        self.ws_timer = 0
-        print("WebSocket connection opened")
-        time.sleep(1)
-        self.ws_connected = True
-
     def handle_websocket_closing(self):
         print("******reconnecting to WS server******")
         t = threading.Thread(target=self.initialize_ws_client)
         t.start()
 
-    def on_close(self, ws, close_status_code, close_msg):
-        print(f"Closed with status code {close_status_code}: {close_msg}")
-
     def on_open(self, ws):
         print("WebSocket connection opened")
+        self.ws_timer = 0
+        time.sleep(1)
+        self.ws_connected = True
     
         while True:
             print("Sending data....")
@@ -129,19 +136,6 @@ class DF_System():
 
             # Wait for a short period before sending the next data (adjust as needed)
             time.sleep(1)
-    
-    def initialize_ws_client(self):
-        
-        self.ws = websocket.WebSocketApp(self.ws_url,
-                                on_message=self.on_message,
-                                on_error=self.on_error,
-                                on_close=self.on_close)
-        
-        # Set the on_open callback to handle the opening of the connection
-        self.ws.on_open = self.on_open
-
-        # Start the WebSocket connection (this will run the on_open callback)
-        self.ws.run_forever()
 
     def request_dummy_data_continuously(self):
 
