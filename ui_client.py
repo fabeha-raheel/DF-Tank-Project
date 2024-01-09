@@ -31,8 +31,8 @@ FPGA_BAUD = 115200
 PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
-# websocket_url = "ws://localhost:8000/"
-websocket_url = "ws://192.168.0.116:9090/"
+websocket_url = "ws://localhost:9090/"
+# websocket_url = "ws://192.168.0.116:9090/"
 
 class Worker(QRunnable):
     
@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
 
     initialization_complete = pyqtSignal()
 
-    def __init__(self, ws_url="ws://localhost:8000/"):
+    def __init__(self, ws_url="ws://localhost:9090/"):
         super(MainWindow, self).__init__()
 
         uic.loadUi('gui.ui', self)  # Load the UI file
@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
 
         self.ws_url = ws_url
         self.ws_connected = False
+        self.ws_timer = 0
 
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
@@ -101,8 +102,6 @@ class MainWindow(QMainWindow):
         # self.arm_button.clicked.connect(self.arm_disarm_ugv)
         # self.manual_button.clicked.connect(self.ugv_mode)
 
-        self.initialize()
-
     def closeEvent(self, event):
         self.run_threads = False
     
@@ -117,8 +116,9 @@ class MainWindow(QMainWindow):
             self.timer.stop()
 
     def initialize(self):
-        self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
-        self.ws_thread.start()
+        if not self.ws_connected:
+            self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
+            self.ws_thread.start()
 
     def initialize_ws_client(self):
         self.ws = websocket.WebSocketApp(self.ws_url,
@@ -164,8 +164,9 @@ class MainWindow(QMainWindow):
 
     def handle_websocket_closing(self):
         print("***************reconnecting to WS server*****************")
-        t = threading.Thread(target=self.initialize_ws_client)
-        t.start()
+        if not self.ws_connected:
+            t = threading.Thread(target=self.initialize_ws_client)
+            t.start()
 
     def extract_static_data(self, data):
         self.df_data.f1 = data['f1']
@@ -300,7 +301,7 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = MainWindow(ws_url=websocket_url)
     main_window.showMaximized()
     # main_window.show()
     sys.exit(app.exec_())
