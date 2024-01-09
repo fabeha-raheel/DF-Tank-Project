@@ -88,19 +88,19 @@ class MainWindow(QMainWindow):
         self._left = False
         self._stop = False
 
-        # self.forward_button.pressed.connect(self.move_forward)
-        # self.forward_button.released.connect(self.stop)
-        # self.backward_button.pressed.connect(self.move_backward)
-        # self.backward_button.released.connect(self.stop)
-        # self.left_button.pressed.connect(self.turn_left)
-        # self.left_button.released.connect(self.stop)
-        # self.right_button.pressed.connect(self.turn_right)
-        # self.right_button.released.connect(self.stop)
-        # self.stop_button.clicked.connect(self.stop)
+        self.forward_button.pressed.connect(self.move_forward)
+        self.forward_button.released.connect(self.stop)
+        self.backward_button.pressed.connect(self.move_backward)
+        self.backward_button.released.connect(self.stop)
+        self.left_button.pressed.connect(self.turn_left)
+        self.left_button.released.connect(self.stop)
+        self.right_button.pressed.connect(self.turn_right)
+        self.right_button.released.connect(self.stop)
+        self.stop_button.clicked.connect(self.stop)
 
-        # self.arm_button.setChecked(False)
-        # self.arm_button.clicked.connect(self.arm_disarm_ugv)
-        # self.manual_button.clicked.connect(self.ugv_mode)
+        self.arm_button.setChecked(False)
+        self.arm_button.clicked.connect(self.arm_disarm_ugv)
+        self.manual_button.clicked.connect(self.ugv_mode)
 
     def closeEvent(self, event):
         self.run_threads = False
@@ -297,6 +297,71 @@ class MainWindow(QMainWindow):
             return int(antenna_heading + 360)
         else:
             return int(antenna_heading)
+        
+    def move_forward(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'forward'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def move_backward(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'backward'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def turn_left(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'left'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def turn_right(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'right'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def stop(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'stop'
+            }
+            self.ws.send(json.dumps(commands))
+    
+    def arm_disarm_ugv(self):
+        if self.arm_button.isChecked():
+            if self.ws_connected:
+                commands = {
+                    'command': 'arm'
+                }
+                self.ws.send(json.dumps(commands))
+        else:
+            if self.ws_connected:
+                commands = {
+                    'command': 'disarm'
+                }
+                self.ws.send(json.dumps(commands))
+
+    def ugv_mode(self):
+        if self.manual_button.isChecked():
+            if self.ws_connected:
+                commands = {
+                    'command': 'manual'
+                }
+                self.ws.send(json.dumps(commands))
+        else:
+            if self.ws_connected:
+                commands = {
+                    'command': 'hold'
+                }
+                self.ws.send(json.dumps(commands))
+
+
 
 if __name__ == '__main__':
 
