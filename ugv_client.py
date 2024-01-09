@@ -10,5 +10,5 @@ if __name__ == '__main__':
 
     df_system.initialize()
 
-    while True:
-        time.sleep(1)
+    # while True:
+    #     time.sleep(1)
