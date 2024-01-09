@@ -31,7 +31,7 @@ sensor_id = "sensor_001"
 
 class DF_System():
 
-    def __init__(self, test=False):
+    def __init__(self, test=False, ws_url="ws://localhost:8000/"):
         
         self.df_data = DF_Data()
 
@@ -49,7 +49,8 @@ class DF_System():
         self._left = False
         self._stop = False
 
-        self.ws_url = "ws://localhost:8000/"
+        self.ws_url = ws_url
+        self.ws_connected = False
 
     def initialize(self):
 
@@ -81,6 +82,25 @@ class DF_System():
 
     def on_error(self, ws, error):
         print(f"Error: {error}")
+
+    def on_close(self, ws, close_status_code, close_msg):
+        print(f"Closed with status code {close_status_code}: {close_msg}")
+        self.ws_connected = False
+        self.ws_timer +=1
+        print("Reconnecting after ", self.ws_timer)
+        time.sleep(self.ws_timer)
+        self.handle_websocket_closing()
+
+    def on_open(self, ws):
+        self.ws_timer = 0
+        print("WebSocket connection opened")
+        time.sleep(1)
+        self.ws_connected = True
+
+    def handle_websocket_closing(self):
+        print("******reconnecting to WS server******")
+        t = threading.Thread(target=self.initialize_ws_client)
+        t.start()
 
     def on_close(self, ws, close_status_code, close_msg):
         print(f"Closed with status code {close_status_code}: {close_msg}")
