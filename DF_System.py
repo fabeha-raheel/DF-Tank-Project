@@ -6,6 +6,7 @@ import threading
 import random
 import websocket #pip3 install websocket-client
 import json
+import signal  # Import the signal module for handling Ctrl+C
 
 import rospy
 from std_msgs.msg import Float64
@@ -18,16 +19,15 @@ from PTZ_Controller import *
 
 TEST = False
 
-FPGA_PORT = '/dev/ttyUSB1'
+FPGA_PORT = '/dev/ttyUSB0'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB0'
+PTZ_PORT = '/dev/ttyUSB1'
 PTZ_BAUD = 9600
 
 # websocket_url = "ws://localhost:8000/"
 websocket_url = "ws://192.168.0.116:8000/"
-sensor_id = "sensor_001"
 
 class DF_System():
 
@@ -76,6 +76,34 @@ class DF_System():
         
         self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
         self.ws_thread.start()
+
+        # Register a signal handler for Ctrl+C
+        signal.signal(signal.SIGINT, self.handle_interrupt)
+
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Ctrl+C pressed. Cleaning up...")
+            self.cleanup()
+
+    def cleanup(self):
+        # Close the WebSocket connection
+        if self.ws_connected:
+            self.ws.close()
+
+        # Stop all threads
+        self.run_threads = False  # Stop the threads gracefully
+        self.ws_thread.join()  # Wait for the WebSocket thread to finish
+
+        # ... (add more cleanup if needed)
+
+        print("Clean exit.")
+
+    def handle_interrupt(self, signum, frame):
+        # Handle Ctrl+C by triggering the cleanup process
+        self.cleanup()
+        sys.exit(0)
     
     def initialize_ws_client(self):
         
@@ -192,6 +220,9 @@ class DF_System():
                     self.df_data.f2 = data["_f2"]
                     self.df_data.n_samples = data["_n_samples"]
                     self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
+                    print("Static data received.")
+                else:
+                    print("Error receiving static antenna data")
 
                 if len(self.df_data.amplitudes) == self.df_data.n_samples:
                     break
