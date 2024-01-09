@@ -119,7 +119,37 @@ class DF_System():
         self.ws.run_forever(ping_interval=13, ping_timeout=10)
 
     def on_message(self, ws, message):
-        print(f"Received message: {message}")
+        # print(f"Received message: {message}")
+        command = json.loads(message)
+
+        if command['command'] == 'forward':
+            print("Moving forward...")
+            self.move_forward()
+        elif command['command'] == 'backward':
+            print("Moving backward...")
+            self.move_backward()
+        elif command['command'] == 'left':
+            print("Turning left...")
+            self.turn_left()
+        elif command['command'] == 'right':
+            print("Turning right...")
+            self.turn_right()
+        elif command['command'] == 'arm':
+            print("Arming ugv...")
+            self.arm_ugv()
+        elif command['command'] == 'disarm':
+            print("Disarming ugv...")
+            self.disarm_ugv()
+        elif command['command'] == 'manual':
+            print("Setting Manual Mode")
+            self.set_mode_ugv(mode='MANUAL')
+        elif command['command'] == 'hold':
+            print("Setting Hold Mode...")
+            self.set_mode_ugv(mode='HOLD')
+        else:
+            print("Stopping UGV...")
+            self.stop()
+
 
     def on_error(self, ws, error):
         print(f"Error: {error}")
@@ -142,28 +172,25 @@ class DF_System():
         self.ws_timer = 0
         time.sleep(1)
         self.ws_connected = True
-    
-        while True:
-            print("Sending data....")
-            data = {
-                "type": 'data',
-                "f1": self.df_data.f1,
-                "f2": self.df_data.f2,
-                "n_samples": self.df_data.n_samples,
-                "beam_width": self.df_data.beam_width,
-                "amplitudes": self.df_data.amplitudes,
-                "angle_pt": self.df_data.angle_pt,
-                "heading": self.df_data.heading
-            }
 
-            # Convert sensor data to JSON
-            json_data = json.dumps(data)
+    def send_data(self):
+        print("Sending data....")
+        data = {
+            "type": 'data',
+            "f1": self.df_data.f1,
+            "f2": self.df_data.f2,
+            "n_samples": self.df_data.n_samples,
+            "beam_width": self.df_data.beam_width,
+            "amplitudes": self.df_data.amplitudes,
+            "angle_pt": self.df_data.angle_pt,
+            "heading": self.df_data.heading
+        }
 
-            # Send the sensor data over the WebSocket connection
-            ws.send(json_data)
+        # Convert sensor data to JSON
+        json_data = json.dumps(data)
 
-            # Wait for a short period before sending the next data (adjust as needed)
-            time.sleep(1)
+        # Send the sensor data over the WebSocket connection
+        self.ws.send(json_data)
 
     def request_dummy_data_continuously(self):
 
@@ -194,6 +221,8 @@ class DF_System():
                 else:
                     self.df_data.angle_pt = pan - 360
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                if self.ws_connected:
+                    self.send_data()
                 if not self.run_threads:
                     break
                 time.sleep(0.5)
@@ -256,6 +285,8 @@ class DF_System():
                     else:
                         self.df_data.angle_pt = pan - 360
                     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                    if self.ws_connected:
+                        self.send_data()
                     if not self.run_threads:
                         break
 
