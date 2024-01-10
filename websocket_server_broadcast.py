@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import asyncio
 import json
 import websockets
@@ -5,10 +7,6 @@ import pickle
 
 # Store connected clients in a set
 connected_clients = set()
-
-def write_to_log(data):
-    with open('/home/ugv/DF-Tank-Project/log.pickle', 'wb') as f:
-        pickle.dump(data, f)
 
 async def handle_client(websocket, path):
     print(f"Client connected from {websocket.remote_address}")
@@ -22,7 +20,6 @@ async def handle_client(websocket, path):
             message = await websocket.recv()
             data = json.loads(message)
             print(data)
-            write_to_log(data)
 
             # Broadcast the received message to all other connected clients
             await broadcast(message, sender=websocket)
@@ -45,9 +42,9 @@ async def broadcast(message, sender):
 
 if __name__ == "__main__":
     # Replace the host and port with your desired values
-    server_host = "localhost"
-    # server_host = "0.0.0.0"
-    server_port = 8000
+    # server_host = "localhost"
+    server_host = "0.0.0.0"
+    server_port = 9090
 
     server = websockets.serve(handle_client, server_host, server_port)
 
