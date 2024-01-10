@@ -6,14 +6,12 @@ import threading
 import random
 import websocket #pip3 install websocket-client
 import json
+import signal  # Import the signal module for handling Ctrl+C
 
 import rospy
 from std_msgs.msg import Float64
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import CommandBool, SetMode, SetModeRequest
-
-from mplwidget import *
-from mplradar import *
 
 from xilinx import *
 from DF_Antenna_Data import *
@@ -21,20 +19,19 @@ from PTZ_Controller import *
 
 TEST = False
 
-FPGA_PORT = '/dev/ttyUSB1'
+FPGA_PORT = '/dev/ttyUSB0'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB0'
+PTZ_PORT = '/dev/ttyUSB1'
 PTZ_BAUD = 9600
 
 # websocket_url = "ws://localhost:8000/"
 websocket_url = "ws://192.168.0.116:8000/"
-sensor_id = "sensor_001"
 
 class DF_System():
 
-    def __init__(self, test=False):
+    def __init__(self, test=False, ws_url="ws://localhost:8000/"):
         
         self.df_data = DF_Data()
 
@@ -52,7 +49,8 @@ class DF_System():
         self._left = False
         self._stop = False
 
-        self.ws_url = "ws://localhost:8000/"
+        self.ws_url = ws_url
+        self.ws_connected = False
 
     def initialize(self):
 
@@ -79,39 +77,33 @@ class DF_System():
         self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
         self.ws_thread.start()
 
-    def on_message(self, ws, message):
-        print(f"Received message: {message}")
+        # Register a signal handler for Ctrl+C
+        signal.signal(signal.SIGINT, self.handle_interrupt)
 
-    def on_error(self, ws, error):
-        print(f"Error: {error}")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Ctrl+C pressed. Cleaning up...")
+            self.cleanup()
 
-    def on_close(self, ws, close_status_code, close_msg):
-        print(f"Closed with status code {close_status_code}: {close_msg}")
+    def cleanup(self):
+        # Close the WebSocket connection
+        if self.ws_connected:
+            self.ws.close()
 
-    def on_open(self, ws):
-        print("WebSocket connection opened")
-    
-        while True:
-            print("Sending data....")
-            data = {
-                "type": 'data',
-                "f1": self.df_data.f1,
-                "f2": self.df_data.f2,
-                "n_samples": self.df_data.n_samples,
-                "beam_width": self.df_data.beam_width,
-                "amplitudes": self.df_data.amplitudes,
-                "angle_pt": self.df_data.angle_pt,
-                "heading": self.df_data.heading
-            }
+        # Stop all threads
+        self.run_threads = False  # Stop the threads gracefully
+        self.ws_thread.join()  # Wait for the WebSocket thread to finish
 
-            # Convert sensor data to JSON
-            json_data = json.dumps(data)
+        # ... (add more cleanup if needed)
 
-            # Send the sensor data over the WebSocket connection
-            ws.send(json_data)
+        print("Clean exit.")
 
-            # Wait for a short period before sending the next data (adjust as needed)
-            time.sleep(1)
+    def handle_interrupt(self, signum, frame):
+        # Handle Ctrl+C by triggering the cleanup process
+        self.cleanup()
+        sys.exit(0)
     
     def initialize_ws_client(self):
         
@@ -124,7 +116,81 @@ class DF_System():
         self.ws.on_open = self.on_open
 
         # Start the WebSocket connection (this will run the on_open callback)
-        self.ws.run_forever()
+        self.ws.run_forever(ping_interval=13, ping_timeout=10)
+
+    def on_message(self, ws, message):
+        # print(f"Received message: {message}")
+        command = json.loads(message)
+
+        if command['command'] == 'forward':
+            print("Moving forward...")
+            self.move_forward()
+        elif command['command'] == 'backward':
+            print("Moving backward...")
+            self.move_backward()
+        elif command['command'] == 'left':
+            print("Turning left...")
+            self.turn_left()
+        elif command['command'] == 'right':
+            print("Turning right...")
+            self.turn_right()
+        elif command['command'] == 'arm':
+            print("Arming ugv...")
+            self.arm_ugv()
+        elif command['command'] == 'disarm':
+            print("Disarming ugv...")
+            self.disarm_ugv()
+        elif command['command'] == 'manual':
+            print("Setting Manual Mode")
+            self.set_mode_ugv(mode='MANUAL')
+        elif command['command'] == 'hold':
+            print("Setting Hold Mode...")
+            self.set_mode_ugv(mode='HOLD')
+        else:
+            print("Stopping UGV...")
+            self.stop()
+
+
+    def on_error(self, ws, error):
+        print(f"Error: {error}")
+
+    def on_close(self, ws, close_status_code, close_msg):
+        print(f"Closed with status code {close_status_code}: {close_msg}")
+        self.ws_connected = False
+        self.ws_timer +=1
+        print("Reconnecting after ", self.ws_timer)
+        time.sleep(self.ws_timer)
+        self.handle_websocket_closing()
+
+    def handle_websocket_closing(self):
+        print("******reconnecting to WS server******")
+        t = threading.Thread(target=self.initialize_ws_client)
+        t.start()
+
+    def on_open(self, ws):
+        print("WebSocket connection opened")
+        self.ws_timer = 0
+        time.sleep(1)
+        self.ws_connected = True
+
+    def send_data(self):
+        print("Sending data....")
+        data = {
+            "type": 'data',
+            "f1": self.df_data.f1,
+            "f2": self.df_data.f2,
+            "n_samples": self.df_data.n_samples,
+            "beam_width": self.df_data.beam_width,
+            "amplitudes": self.df_data.amplitudes,
+            "angle_pt": self.df_data.angle_pt,
+            "heading": self.df_data.heading
+        }
+
+        # Convert sensor data to JSON
+        json_data = json.dumps(data)
+
+        # Send the sensor data over the WebSocket connection
+        self.ws.send(json_data)
 
     def request_dummy_data_continuously(self):
 
@@ -155,6 +221,8 @@ class DF_System():
                 else:
                     self.df_data.angle_pt = pan - 360
                 self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                if self.ws_connected:
+                    self.send_data()
                 if not self.run_threads:
                     break
                 time.sleep(0.5)
@@ -181,6 +249,9 @@ class DF_System():
                     self.df_data.f2 = data["_f2"]
                     self.df_data.n_samples = data["_n_samples"]
                     self.df_data.amplitudes = self.fpga.dynamic_data.amplitudes
+                    print("Static data received.")
+                else:
+                    print("Error receiving static antenna data")
 
                 if len(self.df_data.amplitudes) == self.df_data.n_samples:
                     break
@@ -214,6 +285,8 @@ class DF_System():
                     else:
                         self.df_data.angle_pt = pan - 360
                     self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
+                    if self.ws_connected:
+                        self.send_data()
                     if not self.run_threads:
                         break
 
