@@ -1,10 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import sys
 import numpy as np
 import threading
 import websocket
 import json
+import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
@@ -21,9 +22,7 @@ from mavros_msgs.srv import CommandBool, SetMode, SetModeRequest
 from mplwidget import *
 from mplradar import *
 
-from xilinx import *
 from DF_Antenna_Data import *
-from PTZ_Controller import *
 
 FPGA_PORT = '/dev/ttyUSB1'
 FPGA_BAUD = 115200
@@ -32,8 +31,8 @@ FPGA_BAUD = 115200
 PTZ_PORT = '/dev/ttyUSB0'
 PTZ_BAUD = 9600
 
-# websocket_url = "ws://localhost:8000/"
-websocket_url = "ws://192.168.0.116:8000/"
+websocket_url = "ws://localhost:9090/"
+# websocket_url = "ws://192.168.0.116:9090/"
 
 class Worker(QRunnable):
     
@@ -53,7 +52,7 @@ class MainWindow(QMainWindow):
 
     initialization_complete = pyqtSignal()
 
-    def __init__(self, ws_url="ws://localhost:8000/"):
+    def __init__(self, ws_url="ws://localhost:9090/"):
         super(MainWindow, self).__init__()
 
         uic.loadUi('gui.ui', self)  # Load the UI file
@@ -62,6 +61,8 @@ class MainWindow(QMainWindow):
         self.df_data = DF_Data()
 
         self.ws_url = ws_url
+        self.ws_connected = False
+        self.ws_timer = 0
 
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
@@ -87,21 +88,19 @@ class MainWindow(QMainWindow):
         self._left = False
         self._stop = False
 
-        # self.forward_button.pressed.connect(self.move_forward)
-        # self.forward_button.released.connect(self.stop)
-        # self.backward_button.pressed.connect(self.move_backward)
-        # self.backward_button.released.connect(self.stop)
-        # self.left_button.pressed.connect(self.turn_left)
-        # self.left_button.released.connect(self.stop)
-        # self.right_button.pressed.connect(self.turn_right)
-        # self.right_button.released.connect(self.stop)
-        # self.stop_button.clicked.connect(self.stop)
+        self.forward_button.pressed.connect(self.move_forward)
+        self.forward_button.released.connect(self.stop)
+        self.backward_button.pressed.connect(self.move_backward)
+        self.backward_button.released.connect(self.stop)
+        self.left_button.pressed.connect(self.turn_left)
+        self.left_button.released.connect(self.stop)
+        self.right_button.pressed.connect(self.turn_right)
+        self.right_button.released.connect(self.stop)
+        self.stop_button.clicked.connect(self.stop)
 
-        # self.arm_button.setChecked(False)
-        # self.arm_button.clicked.connect(self.arm_disarm_ugv)
-        # self.manual_button.clicked.connect(self.ugv_mode)
-
-        self.initialize()
+        self.arm_button.setChecked(False)
+        self.arm_button.clicked.connect(self.arm_disarm_ugv)
+        self.manual_button.clicked.connect(self.ugv_mode)
 
     def closeEvent(self, event):
         self.run_threads = False
@@ -117,8 +116,9 @@ class MainWindow(QMainWindow):
             self.timer.stop()
 
     def initialize(self):
-        self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
-        self.ws_thread.start()
+        if not self.ws_connected:
+            self.ws_thread = threading.Thread(target=self.initialize_ws_client, daemon=True)
+            self.ws_thread.start()
 
     def initialize_ws_client(self):
         self.ws = websocket.WebSocketApp(self.ws_url,
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         self.ws.on_open = self.on_open
 
         # Start the WebSocket connection (this will run the on_open callback)
-        self.ws.run_forever()
+        self.ws.run_forever(ping_interval=13, ping_timeout=10)
 
     def on_message(self, ws, message):
         # print(f"Received message: {message}")
@@ -150,9 +150,23 @@ class MainWindow(QMainWindow):
 
     def on_close(self, ws, close_status_code, close_msg):
         print(f"Closed with status code {close_status_code}: {close_msg}")
+        self.ws_connected = False
+        self.ws_timer +=1
+        print("Reconnecting after ", self.ws_timer)
+        time.sleep(self.ws_timer)
+        self.handle_websocket_closing()
 
     def on_open(self, ws):
+        self.ws_timer = 0
         print("WebSocket connection opened")
+        time.sleep(1)
+        self.ws_connected = True
+
+    def handle_websocket_closing(self):
+        print("***************reconnecting to WS server*****************")
+        if not self.ws_connected:
+            t = threading.Thread(target=self.initialize_ws_client)
+            t.start()
 
     def extract_static_data(self, data):
         self.df_data.f1 = data['f1']
@@ -283,15 +297,76 @@ class MainWindow(QMainWindow):
             return int(antenna_heading + 360)
         else:
             return int(antenna_heading)
-         
+        
+    def move_forward(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'forward'
+            }
+            self.ws.send(json.dumps(commands))
 
+    def move_backward(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'backward'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def turn_left(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'left'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def turn_right(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'right'
+            }
+            self.ws.send(json.dumps(commands))
+
+    def stop(self):
+        if self.ws_connected:
+            commands = {
+                'command': 'stop'
+            }
+            self.ws.send(json.dumps(commands))
     
+    def arm_disarm_ugv(self):
+        if self.arm_button.isChecked():
+            if self.ws_connected:
+                commands = {
+                    'command': 'arm'
+                }
+                self.ws.send(json.dumps(commands))
+        else:
+            if self.ws_connected:
+                commands = {
+                    'command': 'disarm'
+                }
+                self.ws.send(json.dumps(commands))
+
+    def ugv_mode(self):
+        if self.manual_button.isChecked():
+            if self.ws_connected:
+                commands = {
+                    'command': 'manual'
+                }
+                self.ws.send(json.dumps(commands))
+        else:
+            if self.ws_connected:
+                commands = {
+                    'command': 'hold'
+                }
+                self.ws.send(json.dumps(commands))
+
 
 
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = MainWindow(ws_url=websocket_url)
     main_window.showMaximized()
     # main_window.show()
     sys.exit(app.exec_())
