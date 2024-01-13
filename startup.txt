@@ -1,0 +1,51 @@
+In the Home Directory, create a bash file called df.sh. Copy the following contents into the file:
+
+#!/bin/bash
+
+source /opt/ros/noetic/setup.bash
+
+roslaunch mavros apm.launch &
+
+python3 /home/df/DF-Tank-Project/ugv_client.py
+
+Create a systemd service to run the code whenever the NUC powers on:
+
+1. Create a systemd Service Unit:
+sudo nano /etc/systemd/system/df.service
+
+2. Add the following contents:
+[Unit]
+Description=DF_Scripts
+After=syslog.target network.target time-sync.target network-online.target
+Wants=network-online.target
+
+[Path]
+PathExists=/util/ros
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/home/df/df.sh
+WorkingDirectory=/home/df
+User=df
+Environment="PATH=/opt/ros/noetic/bin:/home/df/.local/bin:/usr/local/sbin:/usr/>
+Environment="ROS_MASTER_URI=http://localhost:11311"
+Environment="ROS_PACKAGE_PATH=/home/df/catkin_ws/src:/opt/ros/noetic/share"
+Environment="ROS_PYTHON_VERSION=3"
+RestartSec=2s
+KillSignal=SIGINT
+TimeoutStopSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+3. Start the service.
+sudo systemctl enable df.service
+sudo systemctl start df.service
+
+4. To reload service:
+sudo systemctl daemon-reload
+sudo systemctl restart df.service
+
+5. To debug service:
+sudo journalctl -u df.service
