@@ -59,28 +59,23 @@ class MplRadar(QWidget):
         colorbar.set_ticks(colorbar.get_ticks())
         colorbar.set_ticklabels([f"{val:.0f} MHz" for val in colorbar.get_ticks()])
 
-        
-        
 class MplRadarCanvas(FigureCanvas):
-    
+
     def __init__(self):
-        self.fig = Figure(tight_layout = {'pad': 1})
+        self.fig = Figure()
         self.ax = self.fig.add_subplot(111, projection='polar')
-        
+    
         FigureCanvas.__init__(self, self.fig)
-        # FigureCanvas.setSizePolicy(self,
-        #                        QtGui.QSizePolicy.Expanding,
-        #                        QtGui.QSizePolicy.Expanding)
-        # self.ax.tick_params(axis='both', which='major', labelsize=6)
-        # self.ax.tick_params(axis='both', which='minor', labelsize=6) 
 
-        
+        # Set the rotation angle to -90 degrees to have 0 degree on top
+        # self.ax.set_theta_zero_location("N")
+        # self.ax.set_theta_direction(-1)
+        # self.ax.set_rlabel_position(90)
 
-        # self.ax.set_rmax(2)
-        # self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
-        # self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+        self.ax.set_xticks(np.radians(np.arange(0, 360, 45)))
+        self.ax.set_yticklabels([])
+
         self.ax.grid(True)
-        
 
     def set_axis_color(self, color):
         self.ax.spines['polar'].set_color(color)
@@ -90,5 +85,4 @@ class MplRadarCanvas(FigureCanvas):
 
     def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
         self.ax.set_ylim(0, 1)
-        self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)
-        
+        self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)       
