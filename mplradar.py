@@ -90,14 +90,15 @@ class MplRadarCanvas(FigureCanvas):
 
     def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
         self.ax.set_ylim(0, 1)
+
         # Set the new location for the 0-degree tick
         self.ax.set_theta_zero_location('N')
-        # Hide radial labels and lines
-        self.ax.set_yticklabels([])
-        # self.ax.set_yticks([])
-        # Set 0 degree at the top
         self.ax.set_theta_offset(np.pi/2)
         self.ax.set_theta_direction(-1)
 
+        # Hide radial labels and lines
+        self.ax.set_yticklabels([])
+        # self.ax.set_yticks([])
+    
         self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)
         
