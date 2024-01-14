@@ -84,11 +84,13 @@ class MplRadarCanvas(FigureCanvas):
 
     def set_axis_color(self, color):
         self.ax.spines['polar'].set_color(color)
-        self.ax.spines['polar'].set_linewidth(2)
+        self.ax.spines['polar'].set_linewidth(4)
         self.ax.tick_params(axis='x', colors=color)
         self.ax.tick_params(axis='y', colors=color)
 
     def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
         self.ax.set_ylim(0, 1)
+        # Set the new location for the 0-degree tick
+        self.ax.set_theta_zero_location('N')
         self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)
         
