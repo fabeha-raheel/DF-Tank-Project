@@ -1,9 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import asyncio
 import json
 import websockets
-import pickle
 
 # Store connected clients in a set
 connected_clients = set()

@@ -174,7 +174,7 @@ class DF_System():
         self.ws_connected = True
 
     def send_data(self):
-        print("Sending data....")
+        # print("Sending data....")
         data = {
             "type": 'data',
             "f1": self.df_data.f1,
