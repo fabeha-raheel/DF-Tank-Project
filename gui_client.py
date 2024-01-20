@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
 
         if self.init:
             self.extract_data(data)
-            print("Done saving Antenna data")
+            # print("Done saving Antenna data")
         else:
             self.init = True
             self.extract_static_data(data)
@@ -202,44 +202,70 @@ class MainWindow(QMainWindow):
         # show the live spectrum by default
         self.TabWidget.setCurrentIndex(0)
 
+        self.RadarScanTimer = QTimer()
+        self.RadarScanTimer.timeout.connect(self.update_radar_scan)
+        self.scan_angle = 0
+        self.RadarScanTimer.start(10)
+
         self.RadarPlotThread = Worker(self.update_radar_plot)
         self.SpectrumPlotThread = Worker(self.redraw_spectrum)
         self.ScanHistoryThread = Worker(self.update_scan_history)
+        self.HomeScreenThread = Worker(self.update_home_screen)
+
+        self.radarfreqs = []
+        self.radarangles = []
+        self.radaramps = []
 
         self.initialize_plots()
         
         self.threadpool.start(self.RadarPlotThread)
         self.threadpool.start(self.SpectrumPlotThread)
         self.threadpool.start(self.ScanHistoryThread)
+        self.threadpool.start(self.HomeScreenThread)
 
-    def update_radar_plot(self):
-
+    def update_radar_scan(self):
+        self.scan_angle += 1
+        if self.scan_angle >= 360:
+            self.scan_angle = 0
+        # time.sleep(0.1)
+            
+    def update_home_screen(self):
+        
         while self.run_threads:
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
-                
-            # get updated data
-            self.df_data.normalize_matrix_byCol()
-            updated_data = self.df_data.radar_plot_data()
-            freqs = updated_data[0]
-            angles = updated_data[1]
-            amps = updated_data[2]
-
-            for i in range(len(angles)):
-                if angles[i] < 0:
-                    angles[i] = 360 + angles[i]
-
-            self.radar_plot.canvas.ax.cla()
-            self.radar_plot.plotScatterPoints(angles, amps, size=100, color=freqs, marker='o', label='Scatter Points', edgecolors='white')
-            self.radar_plot.canvas.draw()
 
             self.plot_0_degrees.canvas.ax.cla()
             # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
             self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
             self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
             self.plot_0_degrees.canvas.draw()
-                
+
+            # get updated data
+            self.df_data.normalize_matrix_byCol()
+            updated_data = self.df_data.radar_plot_data()
+            self.radarfreqs = updated_data[0]
+            self.radarangles = updated_data[1]
+            self.radaramps = updated_data[2]
+
+            for i in range(len(self.radarangles)):
+                if self.radarangles[i] < 0:
+                    self.radarangles[i] = 360 + self.radarangles[i]
+
             time.sleep(0.5)
+
+    def update_radar_plot(self):
+
+        while self.run_threads:
+            self.tank_heading.setText(str(self.get_tank_heading())+" °N")
+            self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
+        
+            self.radar_plot.canvas.ax.cla()
+            self.radar_plot.plotScatterPoints(self.radarangles, self.radaramps, size=100, color=self.radarfreqs, marker='o', label='Scatter Points', edgecolors='white')
+            self.radar_plot.canvas.update_scan_profile(angle=self.scan_angle)
+            self.radar_plot.canvas.draw()
+                
+            time.sleep(0.1)
     
     def redraw_spectrum(self):
         
