@@ -1,0 +1,2 @@
+rosrun mavros mavparam set SYSID_MYGCS 1
+

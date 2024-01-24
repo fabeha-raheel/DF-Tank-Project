@@ -19,11 +19,11 @@ from PTZ_Controller import *
 
 TEST = False
 
-FPGA_PORT = '/dev/ttyUSB0'
+FPGA_PORT = '/dev/ttyUSB-FPGA'
 FPGA_BAUD = 115200
 
 # PTZ_PORT = '/dev/ttyCH341USB0'
-PTZ_PORT = '/dev/ttyUSB1'
+PTZ_PORT = '/dev/ttyUSB-PTZ'
 PTZ_BAUD = 9600
 
 # websocket_url = "ws://localhost:8000/"
@@ -55,8 +55,16 @@ class DF_System():
     def initialize(self):
 
         if self.test:
+            rospy.init_node('df_ugv', anonymous=True)
+            self.init_ros_heading_subscriber()
+            self.init_ros_control_publisher()
+            self.disarm_ugv()
+
             self.dummy_thread = threading.Thread(target=self.request_dummy_data_continuously, daemon=True)
             self.dummy_thread.start()
+
+            self.controls_thread = threading.Thread(target=self.monitor_controls, daemon=True)
+            self.controls_thread.start()
 
         else:
             rospy.init_node('df_ugv', anonymous=True)
