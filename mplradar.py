@@ -5,10 +5,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
 
 from matplotlib.figure import Figure
-from matplotlib.colors import to_rgba, LinearSegmentedColormap
-from matplotlib.patches import PathPatch
-from matplotlib.path import Path
-import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
 import numpy as np
@@ -52,8 +48,7 @@ class MplRadar(QWidget):
     def plotScatterPoints(self, theta, r, size, color='blue', marker='o', label=None, edgecolors=None):
         self.canvas.plot_scatter_points(theta, r, size, color, marker, label, edgecolors=edgecolors)
     
-    def set_colorbar(self, freqs):
-        # freqs = freqs/1000000
+    def set_colorbar(self, freqs): 
         self.map = self.canvas.ax.imshow(np.stack([freqs, freqs]),cmap='gist_rainbow')
         colorbar = self.canvas.fig.colorbar(self.map, ax=self.canvas.ax)
 
@@ -62,8 +57,6 @@ class MplRadar(QWidget):
             label.set_color('silver')
         colorbar.set_ticks(colorbar.get_ticks())
         colorbar.set_ticklabels([f"{val:.0f} MHz" for val in colorbar.get_ticks()])
-
-        
         
 class MplRadarCanvas(FigureCanvas):
     
@@ -72,28 +65,17 @@ class MplRadarCanvas(FigureCanvas):
         self.ax = self.fig.add_subplot(111, projection='polar')
         
         FigureCanvas.__init__(self, self.fig)
-        # FigureCanvas.setSizePolicy(self,
-        #                        QtGui.QSizePolicy.Expanding,
-        #                        QtGui.QSizePolicy.Expanding)
-        # self.ax.tick_params(axis='both', which='major', labelsize=6)
-        # self.ax.tick_params(axis='both', which='minor', labelsize=6) 
 
-        
-
-        # self.ax.set_rmax(2)
-        # self.ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
-        # self.ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
         self.ax.grid(True)
 
+        # Fig Background Color
         bkg_rgb_color = (34, 39, 62)
-        # Set Fig Background Color
         self.bkg_color_normalized = tuple(component / 255 for component in bkg_rgb_color)
         
     def set_axis_color(self, color):
         self.ax.spines['polar'].set_color(color)
         self.ax.spines['polar'].set_linewidth(4)
-        self.ax.tick_params(axis='x', colors=color)
-        self.ax.tick_params(axis='y', colors=color)
+        self.ax.tick_params(axis='both', which='major', colors=color, direction='inout', length=50)
 
     def plot_scatter_points(self, theta, r, size, color, marker, label, edgecolors=None):
         self.ax.set_ylim(0, 1)
@@ -105,7 +87,6 @@ class MplRadarCanvas(FigureCanvas):
 
         # Hide radial labels and lines
         self.ax.set_yticklabels([])
-        # self.ax.set_yticks([])
     
         self.ax.scatter(np.radians(theta), r, s=size, c=color, cmap='gist_rainbow', marker=marker, label=label, edgecolors=edgecolors)
 
@@ -116,7 +97,7 @@ class MplRadarCanvas(FigureCanvas):
     def update_scan_profile(self, angle, linewidth=5):
 
         lines = []
-        angles = np.arange(angle, angle + 15, 1)
+        angles = np.arange(angle, angle + 15, 0.5)
 
         # Create an array of alpha values for varying opacity
         alphas = np.linspace(0, 1, len(angles))
