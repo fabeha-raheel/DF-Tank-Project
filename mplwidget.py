@@ -50,6 +50,10 @@ class MplWidget(QWidget):
         self.canvas.ax.tick_params(colors=color, which='both')  # 'both' refers to minor and major axes
         self.canvas.ax.xaxis.label.set_color(color)
         self.canvas.ax.yaxis.label.set_color(color)
+
+    def setTickparams(self, labelsize=6):
+        self.canvas.ax.tick_params(axis='both', which='major', labelsize=labelsize)
+        self.canvas.ax.tick_params(axis='both', which='minor', labelsize=labelsize)  
         
         
 class MplCanvas(FigureCanvas):
@@ -62,5 +66,4 @@ class MplCanvas(FigureCanvas):
         # FigureCanvas.setSizePolicy(self,
         #                        QtGui.QSizePolicy.Expanding,
         #                        QtGui.QSizePolicy.Expanding)
-        self.ax.tick_params(axis='both', which='major', labelsize=6)
-        self.ax.tick_params(axis='both', which='minor', labelsize=6)  
+        

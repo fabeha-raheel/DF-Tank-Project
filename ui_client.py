@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import numpy as np
@@ -10,6 +10,7 @@ import time
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, pyqtSignal, pyqtSlot, QThreadPool, QRunnable
+import matplotlib.ticker as ticker
 
 # generate this file using the command 'pyrcc5 -o resources.py resources.qrc' in your terminal
 import resources
@@ -65,7 +66,7 @@ class MainWindow(QMainWindow):
         self.ws_timer = 0
 
         self.custom_f1 = 500000000
-        self.use_custom_range = False
+        self.use_custom_range = True
 
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
@@ -182,18 +183,11 @@ class MainWindow(QMainWindow):
 
         self.frequencies_range_hz = np.arange(start=self.df_data.f1, stop=self.df_data.f2, step=((self.df_data.f2-self.df_data.f1)/self.df_data.n_samples))
         self.frequencies_range_Mhz = self.frequencies_range_hz / 1000000
+        self.frequencies_range_Ghz = self.frequencies_range_hz / 1000000000
 
-        self.frequencies = list(self.frequencies_range_Mhz)
+        self.frequencies = list(self.frequencies_range_Ghz)
 
         self.avg_freqs = self.df_data.averaging(array=self.frequencies, N=10)
-
-        self.custom_start_index = np.searchsorted(self.frequencies_range_hz, self.custom_f1)
-        self.custom_frequencies_range_hz = self.frequencies_range_hz[self.custom_start_index:]
-        self.custom_frequencies_range_Mhz = self.custom_frequencies_range_hz / 1000000
-
-        self.custom_frequencies = list(self.custom_frequencies_range_Mhz)
-
-        self.custom_avg_freqs = self.df_data.averaging(array=self.custom_frequencies, N=10)
 
         self.df_data.initialize_matrix()
         self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
@@ -246,18 +240,11 @@ class MainWindow(QMainWindow):
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
 
-            if self.use_custom_range:
-                self.plot_0_degrees.canvas.ax.cla()
-                # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
-                self.plot_0_degrees.canvas.ax.plot(self.custom_avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4][self.custom_start_index:]), 'y')
-                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
-                self.plot_0_degrees.canvas.draw()
-            else:
-                self.plot_0_degrees.canvas.ax.cla()
-                # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
-                self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
-                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
-                self.plot_0_degrees.canvas.draw()
+            self.plot_0_degrees.canvas.ax.cla()
+            # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+            self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
+            self.plot_0_degrees.setLabels('Frequency (GHz)', 'Amplitude', fontsize=10)
+            self.plot_0_degrees.canvas.draw()
 
             # get updated data
             self.df_data.normalize_matrix_byCol()
@@ -289,54 +276,35 @@ class MainWindow(QMainWindow):
         
         while self.run_threads:
 
-            if self.use_custom_range:
-                avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes[self.custom_start_index:], N=10)
-                
-                self.plot_0.canvas.ax.cla()
-                self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
-                self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-                # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
-                self.plot_0.canvas.ax.plot(self.custom_avg_freqs, avg_amplitudes, 'y')
-                self.plot_0.canvas.draw()
-            else:
-                avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
-                
-                self.plot_0.canvas.ax.cla()
-                self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
-                self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-                # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
-                self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
-                self.plot_0.canvas.draw()
+            avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
+            
+            self.plot_0.canvas.ax.cla()
+            self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
+            self.plot_0.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=10)
+            # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
+            self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
+            self.plot_0.canvas.ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
+            self.plot_0.canvas.ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.1))
+            self.plot_0.canvas.draw()
 
             time.sleep(0.5)
 
     def update_scan_history(self):
 
         while self.run_threads:
-            if self.use_custom_range:
-                for i in range(self.df_data.n_sectors+1):
-                    amplitudes = self.df_data.matrix[:, i]
-                    avg_amplitudes = self.df_data.averaging(array=amplitudes[self.custom_start_index:], N=10)
+            for i in range(self.df_data.n_sectors+1):
+                amplitudes = self.df_data.matrix[:, i]
+                avg_amplitudes = self.df_data.averaging(array=amplitudes, N=10)
 
-                    plot = self.plot_matrix[i]
-                    plot.canvas.ax.cla()
-                    plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-                    plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
-                    # plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-                    plot.canvas.ax.plot(self.custom_avg_freqs, avg_amplitudes, 'y')
-                    plot.canvas.draw()
-            else:
-                for i in range(self.df_data.n_sectors+1):
-                    amplitudes = self.df_data.matrix[:, i]
-                    avg_amplitudes = self.df_data.averaging(array=amplitudes, N=10)
-
-                    plot = self.plot_matrix[i]
-                    plot.canvas.ax.cla()
-                    plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
-                    plot.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=5)
-                    # plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
-                    plot.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
-                    plot.canvas.draw()
+                plot = self.plot_matrix[i]
+                plot.canvas.ax.cla()
+                plot.setTitle("{}° Relative".format((i*self.df_data.beam_width)+self.df_data.alpha1), fontsize=10)
+                plot.setLabels('Frequency (GHz)', 'Amplitude (dBm)', fontsize=5)
+                # plot.canvas.ax.plot(self.frequencies, amplitudes, 'y')
+                plot.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
+                plot.canvas.ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
+                plot.canvas.ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.1))
+                plot.canvas.draw()
 
                 time.sleep(0.5)
 
@@ -344,11 +312,15 @@ class MainWindow(QMainWindow):
         self.plot_0_degrees.setBackgroundColor('k')
         self.plot_0_degrees.canvasBackgroundColor('#53847F')
         self.plot_0_degrees.setTickcolor('#D9D9D9')
+
+        self.plot_0_degrees.setTickparams(labelsize=7)
         
         self.plot_0.setBackgroundColor('k')
+        self.plot_0.setTickparams(labelsize=10)
 
         for plot in self.plot_matrix:
             plot.setBackgroundColor('k')
+            plot.setTickparams(labelsize=4)
 
     def get_tank_heading(self):
         if self.df_data.heading > 180:
