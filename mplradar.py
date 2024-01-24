@@ -56,7 +56,7 @@ class MplRadar(QWidget):
         for label in tick_labels:
             label.set_color('silver')
         colorbar.set_ticks(colorbar.get_ticks())
-        colorbar.set_ticklabels([f"{val:.0f} MHz" for val in colorbar.get_ticks()])
+        colorbar.set_ticklabels([f"{val:.0f} GHz" for val in colorbar.get_ticks()])
         
 class MplRadarCanvas(FigureCanvas):
     
