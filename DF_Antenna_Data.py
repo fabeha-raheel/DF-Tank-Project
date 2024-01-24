@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class DF_Data():
     def __init__(self):
@@ -216,5 +217,19 @@ if __name__ == '__main__':
     # dynamic_data = Antenna_Dyanmaic()
     # print(dynamic_data.__dict__)
 
-    antenna = DF_Data()
-    print(antenna.__dict__)
+    # antenna = DF_Data()
+    # print(antenna.__dict__)
+
+    data = DF_Data()
+    data.f1 = 400000000 / 1000
+    data.f2 = 5900000000 / 1000
+    data.n_samples = 100
+    data.amplitudes = random.sample(range(0, 100), data.n_samples)
+    frequencies = np.arange(data.f1, data.f2, (data.f2-data.f1)/data.n_samples)
+
+    # print("Amplitudes", data.amplitudes)
+    # print("Frequencies", frequencies)
+
+    print(np.searchsorted(frequencies, 500000))
+
+    
