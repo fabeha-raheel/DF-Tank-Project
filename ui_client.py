@@ -64,6 +64,9 @@ class MainWindow(QMainWindow):
         self.ws_connected = False
         self.ws_timer = 0
 
+        self.custom_f1 = 500000000
+        self.use_custom_range = False
+
         self.plot_matrix = [self.plot_11, self.plot_12, self.plot_13, self.plot_21, self.plot_22, self.plot_23, self.plot_31, self.plot_32, self.plot_33]
 
         self.show_page('splash_screen')
@@ -184,6 +187,14 @@ class MainWindow(QMainWindow):
 
         self.avg_freqs = self.df_data.averaging(array=self.frequencies, N=10)
 
+        self.custom_start_index = np.searchsorted(self.frequencies_range_hz, self.custom_f1)
+        self.custom_frequencies_range_hz = self.frequencies_range_hz[self.custom_start_index:]
+        self.custom_frequencies_range_Mhz = self.custom_frequencies_range_hz / 1000000
+
+        self.custom_frequencies = list(self.custom_frequencies_range_Mhz)
+
+        self.custom_avg_freqs = self.df_data.averaging(array=self.custom_frequencies, N=10)
+
         self.df_data.initialize_matrix()
         self.df_data.matrix[:, self.df_data.current_sector] = self.df_data.amplitudes
         
@@ -235,11 +246,18 @@ class MainWindow(QMainWindow):
             self.tank_heading.setText(str(self.get_tank_heading())+" °N")
             self.antenna_heading.setText(str(self.get_antenna_heading())+" °N")
 
-            self.plot_0_degrees.canvas.ax.cla()
-            # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
-            self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
-            self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
-            self.plot_0_degrees.canvas.draw()
+            if self.use_custom_range:
+                self.plot_0_degrees.canvas.ax.cla()
+                # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.canvas.ax.plot(self.custom_avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4])[self.custom_start_index:], 'y')
+                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
+                self.plot_0_degrees.canvas.draw()
+            else:
+                self.plot_0_degrees.canvas.ax.cla()
+                # self.plot_0_degrees.canvas.ax.plot(self.frequencies, self.df_data.matrix[:, 4], 'y')
+                self.plot_0_degrees.canvas.ax.plot(self.avg_freqs, self.df_data.averaging(self.df_data.matrix[:, 4]), 'y')
+                self.plot_0_degrees.setLabels('Frequency (MHz)', 'Amplitude', fontsize=10)
+                self.plot_0_degrees.canvas.draw()
 
             # get updated data
             self.df_data.normalize_matrix_byCol()
@@ -270,14 +288,25 @@ class MainWindow(QMainWindow):
     def redraw_spectrum(self):
         
         while self.run_threads:
-            avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
-            
-            self.plot_0.canvas.ax.cla()
-            self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
-            self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
-            # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
-            self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
-            self.plot_0.canvas.draw()
+
+            if self.use_custom_range:
+                avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
+                
+                self.plot_0.canvas.ax.cla()
+                self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
+                self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
+                # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
+                self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
+                self.plot_0.canvas.draw()
+            else:
+                avg_amplitudes = self.df_data.averaging(array=self.df_data.amplitudes, N=10)
+                
+                self.plot_0.canvas.ax.cla()
+                self.plot_0.setTitle("{}° Relative".format(self.df_data.angle_pt), fontsize=10)
+                self.plot_0.setLabels('Frequency (MHz)', 'Amplitude (dBm)', fontsize=10)
+                # self.plot_0.canvas.ax.plot(self.frequencies, self.df_data.amplitudes, 'y')
+                self.plot_0.canvas.ax.plot(self.avg_freqs, avg_amplitudes, 'y')
+                self.plot_0.canvas.draw()
 
             time.sleep(0.5)
 
@@ -395,4 +424,5 @@ if __name__ == '__main__':
     main_window = MainWindow(ws_url=websocket_url)
     main_window.showMaximized()
     # main_window.show()
+    # main_window.showFullScreen()
     sys.exit(app.exec_())
